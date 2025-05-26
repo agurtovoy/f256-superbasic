@@ -95,13 +95,15 @@ _CPLoop:
 		beq 	_CPTab
 		cmp 	#KWD_QUOTE 					; apostrophe (new line)
 		beq 	_CPNewLine
-		dey 								; undo the get.
+		cmp 	#KWD_AT 					; `at` modifier
+		beq 	_CPAtModifier
+		dey 								; undo the get
 		jsr 	EvaluateExpressionAt0 		; evaluate expression at 0.
 		lda 	NSStatus,x 					; read the status
 		and 	#NSBIsReference 			; is it a reference
-		beq 	_CPIsValue 					; no, display it.
+		beq 	_CPIsValue 					; no, display it
 		;
-		lda 	isPrintFlag 				; if print, dereference and print.
+		lda 	isPrintFlag 				; if print, dereference and print
 		bne 	_CPIsPrint 					; otherwise display.
 		jsr 	CIInputValue 				; input a value to the reference
 		bra 	_CPNewLine
@@ -127,6 +129,27 @@ _CPNumber:
 		lda 	#decimalBuffer & $FF
 		jsr 	CPPrintStringXA 			; print it.
 		bra 	Command_IP_Main				; loop round clearing carry so NL if end
+		;
+		;		`at row, column` modifier
+		;
+_CPAtModifier:
+		ldx 	#0 							; bottom stack level
+		jsr 	Evaluate8BitInteger         ; parse row into `A`
+		pha                                 ; save it on the stack
+		jsr 	CheckComma                  ; ensure the next character is a comma
+		jsr 	Evaluate8BitInteger         ; parse column into `A`
+
+		; TODO: range checking for row and column
+		; successfully parsed row and column, can set the cursor position now
+		sta     EXTColumn					; save column into `EXTColumn`
+		pla                                 ; restore row into `A`
+		sta     EXTRow						; save row into `EXTRow`
+
+		phy
+		jsr 	EXTSetCurrentLine         	; set current line address to `EXTRow`
+        ply
+
+		bra 	Command_IP_Main
 		;
 		;		New line
 		;
@@ -303,5 +326,37 @@ CPPVControl:
 ;;
 CPInputVector:
 		jmp 	KNLGetSingleCharacter
+
+
+;;
+; Set current line address based on row position.
+;
+; Calculates and sets the `EXTAddress` pointer to the start of the line
+; specified by `EXTRow`. Uses the precomputed row offset table for fast
+; address calculation.
+;
+; \in 	EXTRow      The row number to set as current line (0-based).
+; \out  EXTAddress	Pointer to the start of the specified row.
+; \sideeffects      - Modifies registers `A` and `Y`.
+;                   - Updates `EXTAddress` with calculated line address.
+; \see     			EXTScreenRowOffsets, EXTMemory, EXTRow, EXTAddress, EXTColumn
+;;
+EXTSetCurrentLine:
+		lda     EXTRow						; `A` holds the current row
+
+		; lookup the corresponding row offset
+		asl 	a							; multiply row index by 2 to get byte index
+		tay									; `Y` holds the byte index of the row offset
+
+		; add row offset to address
+		clc
+		lda 	#<EXTMemory					; `A` = low byte of screen memory
+		adc 	EXTScreenRowOffsets,y		; add the row offset
+		sta 	EXTAddress					; store low byte of the line address
+
+		lda 	#>EXTMemory					; `A` = high byte of screen memory
+		adc 	EXTScreenRowOffsets+1,y		; add the row offset
+		sta 	EXTAddress+1				; store high byte of the line address
+        rts
 
 		.send code

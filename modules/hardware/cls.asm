@@ -77,9 +77,9 @@ _EXTCSFill3:
 EXTHomeCursor:
 		stz 	EXTRow 						; reset row & column
 		stz 	EXTColumn
-		lda 	#EXTMemory & $FF 			; set address in I/O memory
+		lda 	#<EXTMemory					; set address in I/O memory
 		sta 	EXTAddress
-		lda 	#EXTMemory >> 8
+		lda 	#>EXTMemory
 		sta 	EXTAddress+1
 		; fall through to set hardware cursor
 
