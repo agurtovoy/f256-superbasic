@@ -29,6 +29,7 @@
 EvaluateTerm:
 		.cget 								; look at first character
 		bmi 	_ETCheckUnary 				; unary function ? (text ones)
+_ETVariableCheck:
 		cmp 	#$40 						; 40-7F => identifier reference
 		bcs 	_ETVariable
 		cmp 	#'0' 						; is it a number
@@ -64,9 +65,9 @@ _ETCheckUnary:
 		beq 	_ETHexConstant
 		;
 		cmp 	#KWC_FIRST_UNARY 			; check it actually is a unary function
-		bcc 	_ETSyntaxError
+		bcc 	_ETVariableCheck
 		cmp 	#KWC_LAST_UNARY+1
-		bcs 	_ETSyntaxError
+		bcs 	_ETVariableCheck
 		;
 		phx 								; push X on the stack
 		asl 	a 							; put vector x 2 into X
