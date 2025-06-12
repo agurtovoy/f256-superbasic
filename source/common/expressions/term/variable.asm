@@ -20,7 +20,7 @@
 
 VariableHandler:
 		.cget 								; copy variable address to zTemp0
-		clc 								
+		clc
 		adc 	#((VariableSpace >> 8) - $40) & $FF
 		sta 	zTemp0+1
 		iny
@@ -60,6 +60,7 @@ VariableHandler:
 
 _VHArray:
 		;
+		jsr 	CheckLeftBracket 			; check the left bracket.
 		inx
 		jsr 	Evaluate8BitInteger 		; get the 1st index.
 		;
@@ -81,7 +82,7 @@ _VHNoSecondIndex:
 		;
 		;		So at this point S[X] refers to the array record S[X+1] the 1st index, and S[X+2] the second
 		;		Status[X+2] is $FF if there was only one array index, $00 if there were two.
-		;		
+		;
 		; -----------------------------------------------------------------------------------------------------
 		;
 		;		So first check if the number of indices match
@@ -112,7 +113,7 @@ _VHHas2Mask: 								; so we are now 0 if there is 1 index, and $FF if there is 
 		;
 		;		Second index
 		;
-		ldy 	#3 			 				; check the 2nd size >= 2nd index				
+		ldy 	#3 			 				; check the 2nd size >= 2nd index
 		lda 	(zaTemp),y
 		cmp 	NSMantissa0+2,x
 		bcc 	_VHBadIndex
@@ -120,7 +121,7 @@ _VHHas2Mask: 								; so we are now 0 if there is 1 index, and $FF if there is 
 		;		First index
 		;
 _VHCheckFirstIndex:
-		ldy 	#2 			 				; check the 2nd size >= 2nd index				
+		ldy 	#2 			 				; check the 2nd size >= 2nd index
 		lda 	(zaTemp),y
 		cmp 	NSMantissa0+1,x
 		bcc 	_VHBadIndex
@@ -140,7 +141,7 @@ _VHCheckFirstIndex:
 		ldy 	#2 							; get 1st size in A
 		lda 	(zaTemp),y
 		inc 	a 							; add 1 for zero base
-		plx 								
+		plx
 		jsr 	Multiply8x8 				; calculate -> Z0
 		plx
 _VHNoMultiply:
@@ -155,7 +156,7 @@ _VHNoMultiply:
 		adc 	#0
 		sta 	zTemp0+1
 		;
-		;		Get the type (from Status,0) and use it to scale up 
+		;		Get the type (from Status,0) and use it to scale up
 		;
 		lda 	NSStatus,x
 		jsr 	ScaleByBaseType
