@@ -19,7 +19,8 @@
 ;
 ; ************************************************************************************************
 
-AllocUnary: ;; [alloc(]	
+AllocUnary: ;; [alloc]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	Evaluate16BitInteger		; get bytes required.
 		jsr 	CheckRightBracket
@@ -67,7 +68,7 @@ AllocateXABytes:
 		sta 	lowMemPtr+1
 		bcs 	CISSMemory
 
-		jsr 	CheckIdentifierStringSpace 	; check identifier/string space 
+		jsr 	CheckIdentifierStringSpace 	; check identifier/string space
 
 _ClearMemory:
 		lda 	lowMemPtr 					; cleared all memory allocated
@@ -76,14 +77,14 @@ _ClearMemory:
 		lda 	lowMemPtr+1
 		cmp 	zTemp0+1
 		beq 	_CMExit
-_CMClearNext:		
+_CMClearNext:
 		lda 	#0 							; clear byte, advance to next.
 		sta 	(zTemp0)
 		inc 	zTemp0
 		bne 	_ClearMemory
 		inc		zTemp0+1
 		bra 	_ClearMemory
-_CMExit:		
+_CMExit:
 		plx
 		pla
 		ply

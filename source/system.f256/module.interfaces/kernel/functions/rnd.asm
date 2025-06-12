@@ -3,7 +3,7 @@
 ;
 ;		Name:		rnd.asm
 ;		Purpose:	Random number generator
-;		Created:	11th January 2023 
+;		Created:	11th January 2023
 ;		Reviewed: 	No
 ;		Author:		Paul Robson (paul@robsons.org.uk)
 ;
@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-Unary_Random: ;; [random(]
+Unary_Random: ;; [random]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	URCopyToMantissa  			; put random # in mantissa
 		.cget 								; ) follows
@@ -30,7 +31,7 @@ Unary_Random: ;; [random(]
 		dex
 		jsr 	IntegerModulusNoCheck 		; calculate modulus, so now 0 .. n-1
 		;
-_URNoModulus:		
+_URNoModulus:
 		stz 	NSStatus,x 					; make it an integer positive
 		stz 	NSExponent,x
 		jsr 	CheckRightBracket
@@ -42,7 +43,8 @@ _URNoModulus:
 ;
 ; ************************************************************************************************
 
-Unary_Rnd: ;; [rnd(]
+Unary_Rnd: ;; [rnd]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	EvaluateNumber 				; number to use.
 		jsr 	CheckRightBracket 			; closing bracket
@@ -72,7 +74,7 @@ _URDontSeed:
 
 		lda 	#-30 						; force into 0-1 range
 		sta 	NSExponent,x
-		lda 	#NSTFloat 						
+		lda 	#NSTFloat
 		sta 	NSStatus,x 					; positive float
 		rts
 
@@ -100,12 +102,12 @@ URCopyToMantissa:
 		and 	#$3F 						; make legal mantissa
 		sta 	NSMantissa3,x
 
-		pla 
+		pla
 		sta 	1
 		rts
 
 		.send 	code
-		
+
 ; ************************************************************************************************
 ;
 ;									Changes and Updates
