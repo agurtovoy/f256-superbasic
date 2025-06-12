@@ -12,10 +12,11 @@
 
 		.section code
 
-UnaryTimer: ;; [timer(]
+UnaryTimer: ;; [timer]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	CheckRightBracket
-TimerToStackX:		
+TimerToStackX:
 		jsr 	NSMSetZero 					; zero result
 		stz 	1 							; access I/O
 		lda 	$D659 						; copy timer in
