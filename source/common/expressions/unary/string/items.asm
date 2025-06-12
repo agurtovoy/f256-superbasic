@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-ItemCountUnary: 	;; [itemcount(]
+ItemCountUnary: 	;; [itemcount]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	EvaluateString
 		inx
@@ -36,7 +37,7 @@ _ICULoop:
 		inc 	NSMantissa0,x
 _ICUNoMatch:
 		cmp 	#0
-		bne 	_ICULoop		
+		bne 	_ICULoop
 		inc 	NSMantissa0,x 				; +1
 		ply
 		rts
@@ -47,10 +48,11 @@ _ICUNoMatch:
 ;
 ; ************************************************************************************************
 
-ItemGetUnary: 	;; [itemget$(]
+ItemGetUnary: 	;; [itemget$]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	EvaluateString 				; search string
-		jsr 	CheckComma 
+		jsr 	CheckComma
 		inx 								; get count
 		jsr 	Evaluate8BitInteger
 		cmp 	#0 							; must be > 0, index starts at 1.
@@ -73,11 +75,11 @@ _IGUFindNext:
 		beq 	ICGSRange 					; eol, not found.
 		iny
 		cmp 	ICSeperator 				; until found a seperator (or EOS)
-		bne 	_IGUFindNext		
+		bne 	_IGUFindNext
 		dec 	NSMantissa0+1,x
 		bne 	_IGUFindNext
 		;
-_IGUFoundStart:								; found start		
+_IGUFoundStart:								; found start
 		sty 	zTemp1 						; save start
 		;
 		;		Work out how long the string is.
@@ -85,11 +87,11 @@ _IGUFoundStart:								; found start
 		dey
 _IGUFindLength:
 		iny 								; forward till seperator/EOS
-		lda 	(zTemp0),y		
+		lda 	(zTemp0),y
 		beq 	_IGUFoundLength
 		cmp 	ICSeperator
 		bne 	_IGUFindLength
-_IGUFoundLength:		
+_IGUFoundLength:
 		;
 		;		Copy substring - first calculate length and create string space
 		;
@@ -111,7 +113,7 @@ _IGUCopySub:
 		bra 	_IGUCopySub
 _IGUCopyOver:
 		ply
-		rts		
+		rts
 		.debug
 
 ; ************************************************************************************************
@@ -145,7 +147,7 @@ ICGSRange:
 
 ICSetPointer:
 		lda 	NSMantissa0,x 				; set zTemp0 to point to it.
-		sta 	zTemp0		
+		sta 	zTemp0
 		lda 	NSMantissa1,x
 		sta 	zTemp0+1
 		rts

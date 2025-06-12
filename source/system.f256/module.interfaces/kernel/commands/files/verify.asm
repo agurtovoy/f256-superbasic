@@ -1,32 +1,32 @@
-m; ************************************************************************************************
-; ************************************************************************************************
-;
-;		Name:		verify.asm
-;		Purpose:	VERIFY command
-;		Created:	1st January 2023
-;		Reviewed: 	No
-;		Author:		Paul Robson (paul@robsons.org.uk)
-;
-; ************************************************************************************************
-; ************************************************************************************************
-
-; ************************************************************************************************
-;
-;									VERIFY a Basic file
-;
-; ************************************************************************************************
+;;
+; [verify] statement implementation
+;;
 
 		.section code
 
+;;
+; Verify a program file against the current program in memory.
+;
+; Reads a program file from disk and compares it line-by-line with the
+; currently loaded program in memory. Each line is tokenized and compared with
+; the corresponding tokenized line in memory to ensure they match exactly.
+; Reports an error if any differences are found.
+;
+; \sideeffects  - Opens and closes file stream for reading
+;               - Tokenizes lines from file using temporary buffer
+;               - May generate verify error if files don't match
+;               - Returns to warm start on successful completion
+; \see          EvaluateString, TKTokenizeLine, LoadReadLine, CLComplete
+;;
 Command_VERIFY: ;; [VERIFY]
 		jsr 	EvaluateString 				; file name to verify
 
 		ldx 	zTemp0+1					; zTemp0 -> XA
-		lda 	zTemp0 
+		lda 	zTemp0
 		jsr 	KNLOpenFileRead 			; open file for reading
 		bcs 	_CVErrorHandler 			; error, so fail.
 		sta 	BasicFileStream 			; save the reading stream.
-		jsr     LoadReadByteInit            ; Init reader with the stream
+		jsr 	LoadReadByteInit			; Init reader with the stream
 		stz 	LoadEOFFlag 				; clear EOF Flag.
 		.cresetcodepointer 					; prepare to loop through code.
 
@@ -34,7 +34,7 @@ _CVLoop:
 		jsr 	LoadReadLine 				; get next line.
 		beq 	_CVExit 					; end, exit.
 
-		jsr 	TKTokeniseLine 				; tokenise the line.
+		jsr 	TKTokenizeLine 				; tokenize the line.
 
 		lda 	tokenLineNumber 			; line number = 0
 		ora 	tokenLineNumber+1
@@ -42,7 +42,7 @@ _CVLoop:
 
 		ldy 	#0 							; start compare
 _CVCompareLoop:
-		.cget 								; tokenised code
+		.cget 								; tokenized code
 		cmp 	tokenOffset,y 				; compare against actual code.
 		bne 	_CVCompareError
 		iny
@@ -52,7 +52,7 @@ _CVCompareLoop:
 		.cnextline 							; go to next line.
 		bra 	_CVLoop
 
-_CVExit:			
+_CVExit:
 		lda 	BasicFileStream
 		jsr 	KNLCloseFile
 		jsr 	CLComplete
@@ -66,15 +66,3 @@ _CVErrorHandler:
 		jmp 	CLErrorHandler
 
 		.send code
-
-
-; ************************************************************************************************
-;
-;									Changes and Updates
-;
-; ************************************************************************************************
-;
-;		Date			Notes
-;		==== 			=====
-;
-; ************************************************************************************************

@@ -16,12 +16,13 @@
 ;
 ; 								Val(String) and IsVal(String)
 ;
-;		These have common code. Traditionally VAL() fails if given a bad value. ISVAL() allows 
+;		These have common code. Traditionally VAL() fails if given a bad value. ISVAL() allows
 ;		people to check in advance.
 ;
 ; ************************************************************************************************
 
-ValUnary: ;; [val(]	
+ValUnary: ;; [val]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	ValMainCode 				; do the main val() code
 		bcs 	_VUError 					; couldn't convert
@@ -30,7 +31,8 @@ _VUError:
 		jmp 	TypeError
 
 
-IsValUnary: ;; [isval(]	
+IsValUnary: ;; [isval]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	ValMainCode 				; do the main val() code
 		bcs 	_VUBad
@@ -44,7 +46,7 @@ _VUBad:
 ;
 ; ************************************************************************************************
 
-ValMainCode:		
+ValMainCode:
 		jsr 	EvaluateString 				; get a string
 		jsr 	CheckRightBracket 			; check right bracket present
 
@@ -57,9 +59,9 @@ ValMainCode:
 ValEvaluateZTemp0:
 		phy
 		lda 	(zTemp0) 					; check not empty string
-		beq 	_VMCFail2 		
+		beq 	_VMCFail2
 
-		ldy 	#$FF 						; start position		
+		ldy 	#$FF 						; start position
 		pha 								; save first character
 		cmp 	#"-"		 				; is it - ?
 		bne 	_VMCStart
@@ -67,7 +69,7 @@ ValEvaluateZTemp0:
 		;
 		;		Evaluation loop
 		;
-_VMCStart:		
+_VMCStart:
 		sec 								; initialise first time round.
 _VMCNext:
 		iny 								; pre-increment
@@ -81,7 +83,7 @@ _VMCNext:
 
 _VMCFail:
 		pla
-_VMCFail2:		
+_VMCFail2:
 		ply
 		sec
 		rts
@@ -93,10 +95,10 @@ _VMCSuccess:
 		cmp 	#"-"
 		bne 	_VMCNotNegative
 		jsr		NSMNegate 					; negate it.
-_VMCNotNegative:		
+_VMCNotNegative:
 		ply
 		clc
-		rts		
+		rts
 
 		.send	code
 

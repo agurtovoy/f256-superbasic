@@ -19,8 +19,10 @@
 ; ************************************************************************************************
 
 TileCommand: ;; [tile]
-		.cget 
+		.cget
 		iny
+		cmp 	#KWD_LPAREN
+		beq 	TileRead
 		cmp 	#KWD_AT
 		beq 	_TileSetPos
 		cmp 	#KWD_PLOT
@@ -61,10 +63,10 @@ _TileNoRepeat:
 		;
 _TileOutLoop:
 		lda 	NSMantissa0+1 				; complete ?
-		beq 	_TileCheckAgain 			; check , <repeats>		
+		beq 	_TileCheckAgain 			; check , <repeats>
 		dec 	NSMantissa0+1 				; dec count
 		lda 	#GCMD_TileWrite				; set up to write tile.
-		ldx 	NSMantissa0 
+		ldx 	NSMantissa0
 		phy 								; call preserving Y
 		jsr 	GXGraphicDraw
 		ply
@@ -90,7 +92,7 @@ _TileScroll:
 		bra 	TileCommand
 ;
 ;		Set Scroll using command A.
-;		
+;
 _TileSetScroll:
 		pha 								; save command on stack
 		ldx 	#0 							; get value to scroll to
@@ -119,7 +121,7 @@ TileGetPair:
 ;
 ; ************************************************************************************************
 
-TileRead: ;; [tile(]
+TileRead:
 		plx 								; current stack pos (where the result goes)
 		phx 								; save it back again
 		inx   								; space to evaluate coordinates

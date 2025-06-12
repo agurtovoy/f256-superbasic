@@ -3,214 +3,208 @@
 ;
 	.section code
 KeywordSet0:
-	.text	0,$65,""               ; $80 !0:EOF
-	.text	0,$58,""               ; $81 !1:SH1
-	.text	0,$5a,""               ; $82 !2:SH2
-	.text	4,$fe,"ABS("           ; $83 ABS(
-	.text	6,$93,"ALLOC("         ; $84 ALLOC(
-	.text	4,$ff,"ASC("           ; $85 ASC(
-	.text	5,$29,"CHR$("          ; $86 CHR$(
-	.text	6,$aa,"EVENT("         ; $87 EVENT(
-	.text	5,$6b,"FALSE"          ; $88 FALSE
-	.text	5,$44,"FRAC("          ; $89 FRAC(
-	.text	5,$2c,"GET$("          ; $8a GET$(
-	.text	4,$08,"GET("           ; $8b GET(
-	.text	9,$4a,"GETDATE$("      ; $8c GETDATE$(
-	.text	9,$5b,"GETTIME$("      ; $8d GETTIME$(
-	.text	4,$0d,"HIT("           ; $8e HIT(
-	.text	7,$cc,"INKEY$("        ; $8f INKEY$(
-	.text	6,$a8,"INKEY("         ; $90 INKEY(
-	.text	4,$13,"INT("           ; $91 INT(
-	.text	6,$a7,"ISVAL("         ; $92 ISVAL(
-	.text	10,$e0,"ITEMCOUNT("     ; $93 ITEMCOUNT(
-	.text	9,$5b,"ITEMGET$("      ; $94 ITEMGET$(
-	.text	5,$5c,"JOYB("          ; $95 JOYB(
-	.text	5,$72,"JOYX("          ; $96 JOYX(
-	.text	5,$73,"JOYY("          ; $97 JOYY(
-	.text	8,$49,"KEYDOWN("       ; $98 KEYDOWN(
-	.text	6,$77,"LEFT$("         ; $99 LEFT$(
-	.text	4,$07,"LEN("           ; $9a LEN(
-	.text	4,$0e,"MAX("           ; $9b MAX(
-	.text	5,$26,"MID$("          ; $9c MID$(
-	.text	4,$0c,"MIN("           ; $9d MIN(
-	.text	4,$19,"NOT("           ; $9e NOT(
-	.text	5,$4d,"PEEK("          ; $9f PEEK(
-	.text	6,$91,"PEEKD("         ; $a0 PEEKD(
-	.text	6,$99,"PEEKL("         ; $a1 PEEKL(
-	.text	6,$a4,"PEEKW("         ; $a2 PEEKW(
-	.text	8,$3c,"PLAYING("       ; $a3 PLAYING(
-	.text	7,$e9,"RANDOM("        ; $a4 RANDOM(
-	.text	7,$ca,"RIGHT$("        ; $a5 RIGHT$(
-	.text	4,$0c,"RND("           ; $a6 RND(
-	.text	4,$10,"SGN("           ; $a7 SGN(
-	.text	4,$0e,"SPC("           ; $a8 SPC(
-	.text	5,$45,"STR$("          ; $a9 STR$(
-	.text	5,$56,"TILE("          ; $aa TILE(
-	.text	6,$a9,"TIMER("         ; $ab TIMER(
-	.text	4,$40,"TRUE"           ; $ac TRUE
-	.text	4,$0b,"VAL("           ; $ad VAL(
-	.text	3,$e7,"FOR"            ; $ae FOR
-	.text	2,$8f,"IF"             ; $af IF
-	.text	4,$34,"PROC"           ; $b0 PROC
-	.text	6,$c1,"REPEAT"         ; $b1 REPEAT
-	.text	5,$79,"WHILE"          ; $b2 WHILE
-	.text	5,$66,"ENDIF"          ; $b3 ENDIF
-	.text	7,$0b,"ENDPROC"        ; $b4 ENDPROC
-	.text	4,$3f,"NEXT"           ; $b5 NEXT
-	.text	4,$2f,"THEN"           ; $b6 THEN
-	.text	5,$8c,"UNTIL"          ; $b7 UNTIL
-	.text	4,$2e,"WEND"           ; $b8 WEND
-	.text	2,$95,"AT"             ; $b9 AT
-	.text	2,$9b,"BY"             ; $ba BY
-	.text	4,$1c,"CALL"           ; $bb CALL
-	.text	6,$b2,"CIRCLE"         ; $bc CIRCLE
-	.text	5,$67,"CLEAR"          ; $bd CLEAR
-	.text	5,$7f,"COLOR"          ; $be COLOR
-	.text	6,$d4,"COLOUR"         ; $bf COLOUR
-	.text	4,$1a,"DATA"           ; $c0 DATA
-	.text	3,$da,"DIM"            ; $c1 DIM
-	.text	6,$db,"DOWNTO"         ; $c2 DOWNTO
-	.text	4,$29,"ELSE"           ; $c3 ELSE
-	.text	4,$34,"FROM"           ; $c4 FROM
-	.text	3,$e5,"GFX"            ; $c5 GFX
-	.text	4,$24,"HERE"           ; $c6 HERE
-	.text	5,$63,"IMAGE"          ; $c7 IMAGE
-	.text	3,$e5,"LET"            ; $c8 LET
-	.text	4,$28,"LINE"           ; $c9 LINE
-	.text	5,$6b,"LOCAL"          ; $ca LOCAL
-	.text	7,$1a,"MEMCOPY"        ; $cb MEMCOPY
-	.text	3,$db,"OFF"            ; $cc OFF
-	.text	2,$9d,"ON"             ; $cd ON
-	.text	7,$20,"OUTLINE"        ; $ce OUTLINE
-	.text	7,$0f,"PALETTE"        ; $cf PALETTE
-	.text	4,$3f,"PLOT"           ; $d0 PLOT
-	.text	4,$2f,"POKE"           ; $d1 POKE
-	.text	5,$73,"POKED"          ; $d2 POKED
-	.text	5,$7b,"POKEL"          ; $d3 POKEL
-	.text	5,$86,"POKEW"          ; $d4 POKEW
-	.text	4,$1c,"READ"           ; $d5 READ
-	.text	4,$2e,"RECT"           ; $d6 RECT
-	.text	3,$e4,"REM"            ; $d7 REM
-	.text	5,$7b,"SOLID"          ; $d8 SOLID
-	.text	5,$89,"SOUND"          ; $d9 SOUND
-	.text	6,$d7,"SPRITE"         ; $da SPRITE
-	.text	4,$45,"TEXT"           ; $db TEXT
-	.text	2,$a3,"TO"             ; $dc TO
+	;		length,	hash,	keyword			; token ID	token name
+	.text	3,		$d6,	"ABS"           ; $80		ABS
+	.text	5,		$6b,	"ALLOC"         ; $81		ALLOC
+	.text	3,		$d7,	"ASC"           ; $82		ASC
+	.text	4,		$01,	"CHR$"          ; $83		CHR$
+	.text	5,		$82,	"EVENT"         ; $84		EVENT
+	.text	5,		$6b,	"FALSE"         ; $85		FALSE
+	.text	4,		$1c,	"FRAC"          ; $86		FRAC
+	.text	3,		$e0,	"GET"           ; $87		GET
+	.text	4,		$04,	"GET$"          ; $88		GET$
+	.text	8,		$22,	"GETDATE$"      ; $89		GETDATE$
+	.text	8,		$33,	"GETTIME$"      ; $8a		GETTIME$
+	.text	3,		$e5,	"HIT"           ; $8b		HIT
+	.text	5,		$80,	"INKEY"         ; $8c		INKEY
+	.text	6,		$a4,	"INKEY$"        ; $8d		INKEY$
+	.text	3,		$eb,	"INT"           ; $8e		INT
+	.text	5,		$7f,	"ISVAL"         ; $8f		ISVAL
+	.text	9,		$b8,	"ITEMCOUNT"     ; $90		ITEMCOUNT
+	.text	8,		$33,	"ITEMGET$"      ; $91		ITEMGET$
+	.text	4,		$34,	"JOYB"          ; $92		JOYB
+	.text	4,		$4a,	"JOYX"          ; $93		JOYX
+	.text	4,		$4b,	"JOYY"          ; $94		JOYY
+	.text	7,		$21,	"KEYDOWN"       ; $95		KEYDOWN
+	.text	5,		$4f,	"LEFT$"         ; $96		LEFT$
+	.text	3,		$df,	"LEN"           ; $97		LEN
+	.text	3,		$e6,	"MAX"           ; $98		MAX
+	.text	4,		$fe,	"MID$"          ; $99		MID$
+	.text	3,		$e4,	"MIN"           ; $9a		MIN
+	.text	3,		$f1,	"NOT"           ; $9b		NOT
+	.text	4,		$25,	"PEEK"          ; $9c		PEEK
+	.text	5,		$69,	"PEEKD"         ; $9d		PEEKD
+	.text	5,		$71,	"PEEKL"         ; $9e		PEEKL
+	.text	5,		$7c,	"PEEKW"         ; $9f		PEEKW
+	.text	7,		$14,	"PLAYING"       ; $a0		PLAYING
+	.text	6,		$c1,	"RANDOM"        ; $a1		RANDOM
+	.text	6,		$a2,	"RIGHT$"        ; $a2		RIGHT$
+	.text	3,		$e4,	"RND"           ; $a3		RND
+	.text	3,		$e8,	"SGN"           ; $a4		SGN
+	.text	3,		$e6,	"SPC"           ; $a5		SPC
+	.text	4,		$1d,	"STR$"          ; $a6		STR$
+	.text	5,		$81,	"TIMER"         ; $a7		TIMER
+	.text	4,		$40,	"TRUE"          ; $a8		TRUE
+	.text	3,		$e3,	"VAL"           ; $a9		VAL
+	.text	3,		$e7,	"FOR"           ; $aa		FOR
+	.text	2,		$8f,	"IF"            ; $ab		IF
+	.text	4,		$34,	"PROC"          ; $ac		PROC
+	.text	6,		$c1,	"REPEAT"        ; $ad		REPEAT
+	.text	5,		$79,	"WHILE"         ; $ae		WHILE
+	.text	5,		$66,	"ENDIF"         ; $af		ENDIF
+	.text	7,		$0b,	"ENDPROC"       ; $b0		ENDPROC
+	.text	4,		$3f,	"NEXT"          ; $b1		NEXT
+	.text	4,		$2f,	"THEN"          ; $b2		THEN
+	.text	5,		$8c,	"UNTIL"         ; $b3		UNTIL
+	.text	4,		$2e,	"WEND"          ; $b4		WEND
+	.text	2,		$95,	"AT"            ; $b5		AT
+	.text	2,		$9b,	"BY"            ; $b6		BY
+	.text	4,		$1c,	"CALL"          ; $b7		CALL
+	.text	6,		$b2,	"CIRCLE"        ; $b8		CIRCLE
+	.text	5,		$67,	"CLEAR"         ; $b9		CLEAR
+	.text	5,		$7f,	"COLOR"         ; $ba		COLOR
+	.text	6,		$d4,	"COLOUR"        ; $bb		COLOUR
+	.text	4,		$1a,	"DATA"          ; $bc		DATA
+	.text	3,		$da,	"DIM"           ; $bd		DIM
+	.text	6,		$db,	"DOWNTO"        ; $be		DOWNTO
+	.text	4,		$29,	"ELSE"          ; $bf		ELSE
+	.text	4,		$34,	"FROM"          ; $c0		FROM
+	.text	3,		$e5,	"GFX"           ; $c1		GFX
+	.text	4,		$24,	"HERE"          ; $c2		HERE
+	.text	5,		$63,	"IMAGE"         ; $c3		IMAGE
+	.text	3,		$e5,	"LET"           ; $c4		LET
+	.text	4,		$28,	"LINE"          ; $c5		LINE
+	.text	5,		$6b,	"LOCAL"         ; $c6		LOCAL
+	.text	7,		$1a,	"MEMCOPY"       ; $c7		MEMCOPY
+	.text	3,		$db,	"OFF"           ; $c8		OFF
+	.text	2,		$9d,	"ON"            ; $c9		ON
+	.text	7,		$20,	"OUTLINE"       ; $ca		OUTLINE
+	.text	7,		$0f,	"PALETTE"       ; $cb		PALETTE
+	.text	4,		$3f,	"PLOT"          ; $cc		PLOT
+	.text	4,		$2f,	"POKE"          ; $cd		POKE
+	.text	5,		$73,	"POKED"         ; $ce		POKED
+	.text	5,		$7b,	"POKEL"         ; $cf		POKEL
+	.text	5,		$86,	"POKEW"         ; $d0		POKEW
+	.text	4,		$1c,	"READ"          ; $d1		READ
+	.text	4,		$2e,	"RECT"          ; $d2		RECT
+	.text	3,		$e4,	"REM"           ; $d3		REM
+	.text	5,		$7b,	"SOLID"         ; $d4		SOLID
+	.text	5,		$89,	"SOUND"         ; $d5		SOUND
+	.text	6,		$d7,	"SPRITE"        ; $d6		SPRITE
+	.text	3,		$d7,	"TAB"           ; $d7		TAB
+	.text	4,		$45,	"TEXT"          ; $d8		TEXT
+	.text	2,		$a3,	"TO"            ; $d9		TO
 	.text	$FF
 KeywordSet1:
-	.text	0,$65,""               ; $80 !0:EOF
-	.text	0,$58,""               ; $81 !1:SH1
-	.text	0,$5a,""               ; $82 !2:SH2
-	.text	8,$4c,"ASSEMBLE"       ; $83 ASSEMBLE
-	.text	6,$d2,"ASSERT"         ; $84 ASSERT
-	.text	6,$bd,"BITMAP"         ; $85 BITMAP
-	.text	5,$62,"BLOAD"          ; $86 BLOAD
-	.text	5,$71,"BSAVE"          ; $87 BSAVE
-	.text	3,$e2,"CLS"            ; $88 CLS
-	.text	6,$d0,"CPRINT"         ; $89 CPRINT
-	.text	6,$de,"CURSOR"         ; $8a CURSOR
-	.text	3,$df,"DIR"            ; $8b DIR
-	.text	5,$7a,"DRIVE"          ; $8c DRIVE
-	.text	3,$d7,"END"            ; $8d END
-	.text	7,$11,"EXPLODE"        ; $8e EXPLODE
-	.text	2,$96,"GO"             ; $8f GO
-	.text	5,$80,"GOSUB"          ; $90 GOSUB
-	.text	4,$39,"GOTO"           ; $91 GOTO
-	.text	5,$70,"HIMEM"          ; $92 HIMEM
-	.text	5,$90,"INPUT"          ; $93 INPUT
-	.text	4,$3c,"LIST"           ; $94 LIST
-	.text	4,$20,"LOAD"           ; $95 LOAD
-	.text	6,$b7,"MDELTA"         ; $96 MDELTA
-	.text	5,$89,"MOUSE"          ; $97 MOUSE
-	.text	3,$ea,"NEW"            ; $98 NEW
-	.text	6,$d9,"OPTION"         ; $99 OPTION
-	.text	4,$2e,"PING"           ; $9a PING
-	.text	5,$8d,"PRINT"          ; $9b PRINT
-	.text	7,$24,"RESTORE"        ; $9c RESTORE
-	.text	6,$e0,"RETURN"         ; $9d RETURN
-	.text	3,$f5,"RUN"            ; $9e RUN
-	.text	4,$2f,"SAVE"           ; $9f SAVE
-	.text	7,$0a,"SETDATE"        ; $a0 SETDATE
-	.text	7,$1b,"SETTIME"        ; $a1 SETTIME
-	.text	5,$8d,"SHOOT"          ; $a2 SHOOT
-	.text	7,$2a,"SPRITES"        ; $a3 SPRITES
-	.text	4,$46,"STOP"           ; $a4 STOP
-	.text	4,$2e,"TILE"           ; $a5 TILE
-	.text	5,$81,"TILES"          ; $a6 TILES
-	.text	3,$ff,"TRY"            ; $a7 TRY
-	.text	6,$d5,"VERIFY"         ; $a8 VERIFY
-	.text	3,$ee,"XGO"            ; $a9 XGO
-	.text	5,$78,"XLOAD"          ; $aa XLOAD
-	.text	3,$eb,"ZAP"            ; $ab ZAP
+	;		length,	hash,	keyword			; token ID	token name
+	.text	8,		$4c,	"ASSEMBLE"      ; $80		ASSEMBLE
+	.text	6,		$d2,	"ASSERT"        ; $81		ASSERT
+	.text	6,		$bd,	"BITMAP"        ; $82		BITMAP
+	.text	5,		$62,	"BLOAD"         ; $83		BLOAD
+	.text	5,		$71,	"BSAVE"         ; $84		BSAVE
+	.text	3,		$e2,	"CLS"           ; $85		CLS
+	.text	6,		$d0,	"CPRINT"        ; $86		CPRINT
+	.text	6,		$de,	"CURSOR"        ; $87		CURSOR
+	.text	3,		$df,	"DIR"           ; $88		DIR
+	.text	5,		$7a,	"DRIVE"         ; $89		DRIVE
+	.text	3,		$d7,	"END"           ; $8a		END
+	.text	7,		$11,	"EXPLODE"       ; $8b		EXPLODE
+	.text	2,		$96,	"GO"            ; $8c		GO
+	.text	5,		$80,	"GOSUB"         ; $8d		GOSUB
+	.text	4,		$39,	"GOTO"          ; $8e		GOTO
+	.text	5,		$70,	"HIMEM"         ; $8f		HIMEM
+	.text	5,		$90,	"INPUT"         ; $90		INPUT
+	.text	4,		$3c,	"LIST"          ; $91		LIST
+	.text	4,		$20,	"LOAD"          ; $92		LOAD
+	.text	6,		$b7,	"MDELTA"        ; $93		MDELTA
+	.text	5,		$89,	"MOUSE"         ; $94		MOUSE
+	.text	3,		$ea,	"NEW"           ; $95		NEW
+	.text	6,		$d9,	"OPTION"        ; $96		OPTION
+	.text	4,		$2e,	"PING"          ; $97		PING
+	.text	5,		$8d,	"PRINT"         ; $98		PRINT
+	.text	7,		$24,	"RESTORE"       ; $99		RESTORE
+	.text	6,		$e0,	"RETURN"        ; $9a		RETURN
+	.text	3,		$f5,	"RUN"           ; $9b		RUN
+	.text	4,		$2f,	"SAVE"          ; $9c		SAVE
+	.text	7,		$0a,	"SETDATE"       ; $9d		SETDATE
+	.text	7,		$1b,	"SETTIME"       ; $9e		SETTIME
+	.text	5,		$8d,	"SHOOT"         ; $9f		SHOOT
+	.text	7,		$2a,	"SPRITES"       ; $a0		SPRITES
+	.text	4,		$46,	"STOP"          ; $a1		STOP
+	.text	4,		$2e,	"TILE"          ; $a2		TILE
+	.text	5,		$81,	"TILES"         ; $a3		TILES
+	.text	3,		$ff,	"TRY"           ; $a4		TRY
+	.text	6,		$d5,	"VERIFY"        ; $a5		VERIFY
+	.text	3,		$ee,	"XGO"           ; $a6		XGO
+	.text	5,		$78,	"XLOAD"         ; $a7		XLOAD
+	.text	3,		$eb,	"ZAP"           ; $a8		ZAP
 	.text	$FF
 KeywordSet2:
-	.text	0,$65,""               ; $80 !0:EOF
-	.text	0,$58,""               ; $81 !1:SH1
-	.text	0,$5a,""               ; $82 !2:SH2
-	.text	3,$c8,"ADC"            ; $83 ADC
-	.text	3,$d3,"AND"            ; $84 AND
-	.text	3,$e0,"ASL"            ; $85 ASL
-	.text	3,$c8,"BCC"            ; $86 BCC
-	.text	3,$d8,"BCS"            ; $87 BCS
-	.text	3,$d8,"BEQ"            ; $88 BEQ
-	.text	3,$df,"BIT"            ; $89 BIT
-	.text	3,$d8,"BMI"            ; $8a BMI
-	.text	3,$d5,"BNE"            ; $8b BNE
-	.text	3,$de,"BPL"            ; $8c BPL
-	.text	3,$d5,"BRA"            ; $8d BRA
-	.text	3,$df,"BRK"            ; $8e BRK
-	.text	3,$db,"BVC"            ; $8f BVC
-	.text	3,$eb,"BVS"            ; $90 BVS
-	.text	3,$d2,"CLC"            ; $91 CLC
-	.text	3,$d3,"CLD"            ; $92 CLD
-	.text	3,$d8,"CLI"            ; $93 CLI
-	.text	3,$e5,"CLV"            ; $94 CLV
-	.text	3,$e0,"CMP"            ; $95 CMP
-	.text	3,$eb,"CPX"            ; $96 CPX
-	.text	3,$ec,"CPY"            ; $97 CPY
-	.text	3,$cc,"DEC"            ; $98 DEC
-	.text	3,$e1,"DEX"            ; $99 DEX
-	.text	3,$e2,"DEY"            ; $9a DEY
-	.text	3,$e6,"EOR"            ; $9b EOR
-	.text	3,$da,"INC"            ; $9c INC
-	.text	3,$ef,"INX"            ; $9d INX
-	.text	3,$f0,"INY"            ; $9e INY
-	.text	3,$e7,"JMP"            ; $9f JMP
-	.text	3,$ef,"JSR"            ; $a0 JSR
-	.text	3,$d1,"LDA"            ; $a1 LDA
-	.text	3,$e8,"LDX"            ; $a2 LDX
-	.text	3,$e9,"LDY"            ; $a3 LDY
-	.text	3,$f1,"LSR"            ; $a4 LSR
-	.text	3,$ed,"NOP"            ; $a5 NOP
-	.text	3,$e2,"ORA"            ; $a6 ORA
-	.text	3,$d9,"PHA"            ; $a7 PHA
-	.text	3,$e8,"PHP"            ; $a8 PHP
-	.text	3,$f0,"PHX"            ; $a9 PHX
-	.text	3,$f1,"PHY"            ; $aa PHY
-	.text	3,$dd,"PLA"            ; $ab PLA
-	.text	3,$ec,"PLP"            ; $ac PLP
-	.text	3,$f4,"PLX"            ; $ad PLX
-	.text	3,$f5,"PLY"            ; $ae PLY
-	.text	3,$ed,"ROL"            ; $af ROL
-	.text	3,$f3,"ROR"            ; $b0 ROR
-	.text	3,$ef,"RTI"            ; $b1 RTI
-	.text	3,$f9,"RTS"            ; $b2 RTS
-	.text	3,$d8,"SBC"            ; $b3 SBC
-	.text	3,$db,"SEC"            ; $b4 SEC
-	.text	3,$dc,"SED"            ; $b5 SED
-	.text	3,$e1,"SEI"            ; $b6 SEI
-	.text	3,$e8,"STA"            ; $b7 STA
-	.text	3,$f7,"STP"            ; $b8 STP
-	.text	3,$ff,"STX"            ; $b9 STX
-	.text	3,$00,"STY"            ; $ba STY
-	.text	3,$01,"STZ"            ; $bb STZ
-	.text	3,$ed,"TAX"            ; $bc TAX
-	.text	3,$ee,"TAY"            ; $bd TAY
-	.text	3,$e8,"TRB"            ; $be TRB
-	.text	3,$e9,"TSB"            ; $bf TSB
-	.text	3,$ff,"TSX"            ; $c0 TSX
-	.text	3,$ed,"TXA"            ; $c1 TXA
-	.text	3,$ff,"TXS"            ; $c2 TXS
-	.text	3,$ee,"TYA"            ; $c3 TYA
+	;		length,	hash,	keyword			; token ID	token name
+	.text	3,		$c8,	"ADC"           ; $80		ADC
+	.text	3,		$d3,	"AND"           ; $81		AND
+	.text	3,		$e0,	"ASL"           ; $82		ASL
+	.text	3,		$c8,	"BCC"           ; $83		BCC
+	.text	3,		$d8,	"BCS"           ; $84		BCS
+	.text	3,		$d8,	"BEQ"           ; $85		BEQ
+	.text	3,		$df,	"BIT"           ; $86		BIT
+	.text	3,		$d8,	"BMI"           ; $87		BMI
+	.text	3,		$d5,	"BNE"           ; $88		BNE
+	.text	3,		$de,	"BPL"           ; $89		BPL
+	.text	3,		$d5,	"BRA"           ; $8a		BRA
+	.text	3,		$df,	"BRK"           ; $8b		BRK
+	.text	3,		$db,	"BVC"           ; $8c		BVC
+	.text	3,		$eb,	"BVS"           ; $8d		BVS
+	.text	3,		$d2,	"CLC"           ; $8e		CLC
+	.text	3,		$d3,	"CLD"           ; $8f		CLD
+	.text	3,		$d8,	"CLI"           ; $90		CLI
+	.text	3,		$e5,	"CLV"           ; $91		CLV
+	.text	3,		$e0,	"CMP"           ; $92		CMP
+	.text	3,		$eb,	"CPX"           ; $93		CPX
+	.text	3,		$ec,	"CPY"           ; $94		CPY
+	.text	3,		$cc,	"DEC"           ; $95		DEC
+	.text	3,		$e1,	"DEX"           ; $96		DEX
+	.text	3,		$e2,	"DEY"           ; $97		DEY
+	.text	3,		$e6,	"EOR"           ; $98		EOR
+	.text	3,		$da,	"INC"           ; $99		INC
+	.text	3,		$ef,	"INX"           ; $9a		INX
+	.text	3,		$f0,	"INY"           ; $9b		INY
+	.text	3,		$e7,	"JMP"           ; $9c		JMP
+	.text	3,		$ef,	"JSR"           ; $9d		JSR
+	.text	3,		$d1,	"LDA"           ; $9e		LDA
+	.text	3,		$e8,	"LDX"           ; $9f		LDX
+	.text	3,		$e9,	"LDY"           ; $a0		LDY
+	.text	3,		$f1,	"LSR"           ; $a1		LSR
+	.text	3,		$ed,	"NOP"           ; $a2		NOP
+	.text	3,		$e2,	"ORA"           ; $a3		ORA
+	.text	3,		$d9,	"PHA"           ; $a4		PHA
+	.text	3,		$e8,	"PHP"           ; $a5		PHP
+	.text	3,		$f0,	"PHX"           ; $a6		PHX
+	.text	3,		$f1,	"PHY"           ; $a7		PHY
+	.text	3,		$dd,	"PLA"           ; $a8		PLA
+	.text	3,		$ec,	"PLP"           ; $a9		PLP
+	.text	3,		$f4,	"PLX"           ; $aa		PLX
+	.text	3,		$f5,	"PLY"           ; $ab		PLY
+	.text	3,		$ed,	"ROL"           ; $ac		ROL
+	.text	3,		$f3,	"ROR"           ; $ad		ROR
+	.text	3,		$ef,	"RTI"           ; $ae		RTI
+	.text	3,		$f9,	"RTS"           ; $af		RTS
+	.text	3,		$d8,	"SBC"           ; $b0		SBC
+	.text	3,		$db,	"SEC"           ; $b1		SEC
+	.text	3,		$dc,	"SED"           ; $b2		SED
+	.text	3,		$e1,	"SEI"           ; $b3		SEI
+	.text	3,		$e8,	"STA"           ; $b4		STA
+	.text	3,		$f7,	"STP"           ; $b5		STP
+	.text	3,		$ff,	"STX"           ; $b6		STX
+	.text	3,		$00,	"STY"           ; $b7		STY
+	.text	3,		$01,	"STZ"           ; $b8		STZ
+	.text	3,		$ed,	"TAX"           ; $b9		TAX
+	.text	3,		$ee,	"TAY"           ; $ba		TAY
+	.text	3,		$e8,	"TRB"           ; $bb		TRB
+	.text	3,		$e9,	"TSB"           ; $bc		TSB
+	.text	3,		$ff,	"TSX"           ; $bd		TSX
+	.text	3,		$ed,	"TXA"           ; $be		TXA
+	.text	3,		$ff,	"TXS"           ; $bf		TXS
+	.text	3,		$ee,	"TYA"           ; $c0		TYA
 	.text	$FF
 	.send code

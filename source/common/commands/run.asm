@@ -18,7 +18,7 @@
 ;
 ; ************************************************************************************************
 
-EOLCommand: ;; [!0:EOF0]
+EOLCommand: ;; [#EOL]
 		.cnextline
 		bra 	RunNewLine
 
@@ -48,11 +48,11 @@ RunCurrentProgram:
 
 		; ----------------------------------------------------------------------------------------
 		;
-		;		New line comes here		
+		;		New line comes here
 		;
 		; ----------------------------------------------------------------------------------------
-		
-RunNewLine:		
+
+RunNewLine:
 		.cget0 								; is there any more program to run ?
 		beq 	CRNoProgram         		; no then END.
 		ldx 	#$FF 						; reset stack
@@ -60,9 +60,9 @@ RunNewLine:
 		;
 		;		Run a line from here.
 		;
-RUNCodePointerLine:		
+RUNCodePointerLine:
 		ldy 	#2 							; start of program
-		
+
 		; ----------------------------------------------------------------------------------------
 		;
 		; 		Main run loop, with/without preincrementing
@@ -73,8 +73,8 @@ _CRIncMainLoop:
 		.breakcheck							; break check
 		bne 	_CRBreak
 		.tickcheck TickHandler  			; if time elapsed call the tick handler.
-_CRNoBreakCheck:		
-		; 									
+_CRNoBreakCheck:
+		;
 		iny									; next token
 _CRMainLoop:
 		stz 	stringInitialised 			; clear the temporary string initialised flag.
@@ -84,7 +84,7 @@ _CRMainLoop:
 		bcs 	_CRIsKeyword
 		cmp 	#KWC_FIRST_UNARY 			; if unary, syntax error.
 		bcs		_CRSyntaxError
-_CRIsKeyword:		
+_CRIsKeyword:
 		iny 								; consume command
 		asl 	a 							; double losing the MSB which is '1' as tokens are $80-$FF
 		tax 								; put in X for vector jump
@@ -97,22 +97,22 @@ _CRIsKeyword:
 		;
 		; ----------------------------------------------------------------------------------------
 
-_CRNotKeyword:		
+_CRNotKeyword:
 		cmp 	#KWD_COLON 					; if a :, consume it and go round.
-		beq 	_CRIncMainLoop	
+		beq 	_CRIncMainLoop
 		cmp 	#$40 						; variable/call reference
 		bcc 	_CRNotVariable
 ;
 ;		Implied LET
 ;
-_CRGoLet:		
+_CRGoLet:
 		jsr 	LetCommand
 		bra 	_CRMainLoop
 ;
 ;		Not colon, not a variable
-;	
+;
 _CRNotVariable:
-		cmp 	#KWD_ATCH 					; handle @ 
+		cmp 	#KWD_ATCH 					; handle @
 		beq 	_CRGoLet
 		cmp 	#KWD_QMARK 					; handle ? !
 		beq 	_CRGoLet
@@ -136,40 +136,20 @@ _CRSyntaxError:
 		jmp 	SyntaxError
 
 _CRCallVector0:
-		jmp 	(VectorSet0,x)		
+		jmp 	(VectorSet0,x)
 
 _CRBreak:
 		.error_break
-		
+
 CRNoProgram:
 		jmp 	EndCommand
-		
 
-; ************************************************************************************************
-;
-;										Shift 1/2 commands
-;
-; ************************************************************************************************
-
-Shift1Command: ;; [!1:SH10]
-		.cget 								; get next token
-		iny
-		asl 	a
-		tax
-		jmp 	(VectorSet1,x)
-
-Shift2Command: ;; [!2:SH20]
-		.cget 								; get next token
-		iny
-		asl 	a
-		tax
-		jmp 	(VectorSet2,x)
 
 ; ************************************************************************************************
 ;
 ;										Unused
 ;
-; ************************************************************************************************		
+; ************************************************************************************************
 
 Unused1: 	;; [proc]
 Unused2: 	;; [to]
@@ -177,11 +157,11 @@ Unused3: 	;; [downto]
 Unused4:	;; [then]
 		jmp 	SyntaxError
 
-; ************************************************************************************************		
+; ************************************************************************************************
 ;
 ;										Vectors
 ;
-; ************************************************************************************************		
+; ************************************************************************************************
 
 		.align 2
 		.include "../generated/vectors.dat"
