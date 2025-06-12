@@ -18,14 +18,15 @@
 ;
 ; ************************************************************************************************
 
-ErrorHandler:	
+ErrorHandler:
+		phy									; save token offset
 		pha 								; save error #
 
 		tay 								; find the error text
 		beq 	_EHEnd
 		ldx 	#0
 		.set16 	zTemp0,ErrorText
-_EHFind:		
+_EHFind:
 		dey 								; keep looking through text
 		beq 	_EHFound
 _EHFindZero:
@@ -33,7 +34,7 @@ _EHFindZero:
 		inc 	zTemp0
 		bne 	_EHFNoCarry
 		inc 	zTemp0+1
-_EHFNoCarry:		
+_EHFNoCarry:
 		cmp 	#0
 		bne 	_EHFindZero
 		bra 	_EHFind
@@ -42,7 +43,7 @@ _EHFound:
 		lda 	zTemp0 						; print message
 		ldx 	zTemp0+1
 		jsr 	PrintStringXA
-	
+
 		pla  								; check if error is 'open structure'
 		cmp 	#ERRID_STRUCT
 		beq 	_EHCREnd
@@ -52,12 +53,10 @@ _EHFound:
 		bne 	_EHAtMsg
 		iny
 		.cget
-		beq 	_EHCREnd
+		beq 	_EHNearMsg
 
-_EHAtMsg:		
-		ldx 	#_AtMsg >> 8 				; print " at "
-		lda 	#_AtMsg & $FF
-		jsr 	PrintStringXA
+_EHAtMsg:
+		._print_string	EHAtMsg				; print " at line "
 
 		ldy 	#1 							; line number into XA
 		.cget
@@ -69,13 +68,28 @@ _EHAtMsg:
 		jsr 	ConvertInt16 				; convert XA to string
 		jsr 	PrintStringXA 				; and print it.
 
+_EHNearMsg:
+		._print_string	EHNearMsgStart		; print " near '"
+		ply									; restore token offest
+		dey									; get the previous token
+		.cget
+		jsr 	EXTPrintNoControl
+
 _EHCREnd:
 		lda 	#13 						; new line
 		jsr 	EXTPrintCharacter
-_EHEnd:			
+_EHEnd:
 		jmp 	WarmStart
 
-_AtMsg:	.text 	" at line ",0
+EHAtMsg			.text 	" at line ",0
+EHNearMsgStart	.text 	" near token ",0
+
+_print_string .macro
+		ldx 	#>(\1)
+		lda 	#<(\1)
+		jsr 	PrintStringXA
+		.endm
+
 
 ; ************************************************************************************************
 ;
@@ -96,7 +110,7 @@ _PSXALoop:
 		bra 	_PSXALoop
 _PSXAExit:
 		ply
-		rts						
+		rts
 		.send code
 
 ; ************************************************************************************************

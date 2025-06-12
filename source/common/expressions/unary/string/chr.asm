@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-ChrUnary: ;; [chr$(]	
+ChrUnary: ;; [chr$]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	Evaluate8BitInteger			; get value (chr$(0) returns an empty string)
 		pha

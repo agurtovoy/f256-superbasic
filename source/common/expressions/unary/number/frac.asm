@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-FracUnary: ;; [frac(]	
+FracUnary: ;; [frac]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	EvaluateNumber 				; get a float or int
 		jsr 	CheckRightBracket
@@ -27,7 +28,7 @@ FracUnary: ;; [frac(]
 		beq 	_IUZero
 		jsr 	FloatFractionalPart 		; if so, get the fractional part.
 		rts
-_IUZero:		
+_IUZero:
 		jsr 	NSMSetZero
 		rts
 

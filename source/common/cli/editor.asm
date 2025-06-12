@@ -28,7 +28,7 @@ EditProgramCode:
 		bcc 	_EPCNoDelete 				; reached the end : don't delete
 		bne 	_EPCNoDelete 				; found slot but didn't match : no delete
 		jsr 	MemoryDeleteLine 			; delete the line
-_EPCNoDelete:		
+_EPCNoDelete:
 		;
 		;		Insert the line.
 		;
@@ -53,8 +53,8 @@ _EPCNoInsert:
 ; ***************************************************************************************
 
 ResetTokenBuffer:
-		lda		#3					; reset the token buffer to empty
-		sta		tokenOffset			; (3 bytes for line number & offset)
+		lda		#global.FIRST_TOKEN_OFFSET	; reset the token buffer to empty
+		sta		tokenOffset					; (3 bytes for line number & offset)
 		stz		tokenLineNumber
 		stz		tokenLineNumber+1
 		.csetcodepointer tokenOffset

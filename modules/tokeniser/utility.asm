@@ -1,100 +1,80 @@
-; ************************************************************************************************
-; ************************************************************************************************
-;
-;		Name:		utility.asm
-;		Purpose:	Tokeniser Utilities
-;		Created:	19th September 2022
-;		Reviewed: 	23rd November 2022
-;		Author:		Paul Robson (paul@robsons.org.uk)
-;
-; ************************************************************************************************
-; ************************************************************************************************
+;;
+; Tokenizer utilities
+;;
 
 		.section code
 
-; ************************************************************************************************
+;;
+; Calculate hash of identifier in line buffer.
 ;
-;					   Calculate Hash of part of buffer selected for identifier
+; Computes a simple hash for the identifier in the line buffer, from
+; `identStart` to `identTypeEnd`. The hash is the sum of all character values
+; in the identifier, including any type marker. Since identifiers are
+; case-insensitive, lowercase letters are converted to uppercase before
+; summing. The hash is used for fast token table lookups.
 ;
-; ************************************************************************************************
-
+; \in identStart        Start index of the identifier in the line buffer
+; \in identTypeEnd      End index of the identifier in the line buffer
+; \out identHash        Computed hash value of the identifier
+; \sideeffects          - Modifies `A` register
+;                       - Updates `identHash` with the computed hash value
+;                       - Preserves `X` register
+; \see                  identStart, identTypeEnd, identHash, lineBuffer
+;;
 TOKCalculateHash:
+		; the hash algorithm needs to match the one used to generate the token
+		; table in `tokens.py` -- a simple sum at present
 		phx
-		ldx 	identStart 					; needs to be same as in tokens.py - simple sum at present.
-		lda 	#0 					
-_TCHLoop:
-		clc
-		adc 	lineBuffer,x
-		inx
-		cpx 	identTypeEnd 				; do the whole thing including type and array markers.
-		bne 	_TCHLoop	
-		sta 	identHash 					; save the hash
-		plx	
+		ldx 	identStart					; `X` points to start of identifier
+		stz 	identHash					; reset the hash
+
+	_loop:
+		lda 	lineBuffer,x				; load character in A
+		cmp 	#'_'+1						; check if uppercase, _, or a type marker ($, #)
+		bcc 	_upper						;
+		eor 	#$20						; lowercase, convert to uppercase by flipping bit 5
+	_upper:
+		clc									; clear carry for addition
+		adc 	identHash					; add hash to the character in A to get the new hash
+		sta 	identHash 					; save the updated hash
+		inx									; advance to next character
+		cpx 	identTypeEnd 				; continue until we consumed both the
+		bne 	_loop						; identifier and the type marker
+
+		plx
 		rts
 
-; ************************************************************************************************
+;;
+; Extract line number from line buffer.
 ;
-;					   Fix case of line in LineBuffer to U/C outside quotes
+; Parses a decimal line number from the line buffer starting at position `X`.
+; The line number is accumulated into `tokenLineNumber` using decimal
+; arithmetic (multiply by 10 and add digit). Does not initialize
+; `tokenLineNumber` to zero, allowing for accumulation of multiple digit
+; groups.
 ;
-; ************************************************************************************************
-
-LCLFixLineBufferCase:
-		ldx 	#0
-		;
-		;		Loop (out of quotes)
-		;
-_FLBCLoop:
-		lda 	lineBuffer,x 				; get next character
-		beq 	_FLBCExit 					; end of string.
-		cmp 	#'"'						; quote, go to in quotes
-		beq 	_FLBCInQuotes
-		inx
-		cmp 	#'a'						; needs capitalising ?
-		bcc 	_FLBCLoop
-		cmp 	#'z'+1
-		bcs 	_FLBCLoop
-		sec 								; make U/C
-		sbc 	#32		
-		sta	 	lineBuffer-1,x 				; write back
-		bra 	_FLBCLoop
-		;
-		;		Loop (in quotes)
-		;
-_FLBCInQuotes:
-		inx 								; advance
-		lda 	lineBuffer,x 				; get next
-		beq 	_FLBCExit 					; exit on EOS
-		cmp 	#'"' 				 		; until " found
-		bne 	_FLBCInQuotes 		
-		inx 								; skip over it
-		bra 	_FLBCLoop
-		;
-_FLBCExit:
-		rts
-
-; ************************************************************************************************
-;
-;		  Extract line number from lineBuffer,x - we know there's at least *one* digit
-;		 				Does not zero the initial value (in tokenLineNumber)
-;
-; ************************************************************************************************
-
+; \in X             Current position in `lineBuffer` (pointing at first digit)
+; \out X            Updated position after the line number
+; \sideeffects      - Updates `tokenLineNumber` with parsed value
+;                   - Modifies `A` register during parsing
+; \see              tokenLineNumber, lineBuffer
+;;
 TOKExtractLineNumber:
 		lda 	tokenLineNumber+1 			; push current value on stack
 		pha
 		lda 	tokenLineNumber
 		pha
-		jsr 	_LCLNTimes2 				; line # x 2
-		jsr 	_LCLNTimes2 				; line # x 4
+		jsr 	_ln_times_2 				; line # x 2
+		jsr 	_ln_times_2 				; line # x 4
 		;
 		clc 								; add stacked value
-		pla 
+		pla
 		adc 	tokenLineNumber
 		sta 	tokenLineNumber
-		pla 
+		pla
 		adc 	tokenLineNumber+1
 		sta 	tokenLineNumber+1 			; line # x 5
-		jsr 	_LCLNTimes2 				; line # x 10
+		jsr 	_ln_times_2 				; line # x 10
 		;
 		lda 	lineBuffer,x 				; get and consume character
 		inx
@@ -102,29 +82,38 @@ TOKExtractLineNumber:
 		clc
 		adc 	tokenLineNumber
 		sta 	tokenLineNumber
-		bcc 	_TLENNoCarry
+		bcc 	_no_carry
 		inc 	tokenLineNumber+1
-_TLENNoCarry:		
+
+	_no_carry:
 		lda 	lineBuffer,x 				; more digits ?
 		cmp 	#'0'
-		bcc 	_TLENExit
+		bcc 	_exit
 		cmp 	#'9'+1
 		bcc 	TOKExtractLineNumber
-_TLENExit:
+
+	_exit:
 		rts
 
-_LCLNTimes2:		
+	_ln_times_2:
 		asl 	tokenLineNumber 			; doubles tokenLineNumber.
 		rol 	tokenLineNumber+1
 		rts
 
-; ************************************************************************************************
+;;
+; Write byte to token buffer.
 ;
-;								Write Byte to tokenBuffer
+; Writes a single byte to the tokenized output buffer at the current position
+; and advances the buffer pointer. Used to output tokens, length bytes, and
+; data during the tokenization process.
 ;
-; ************************************************************************************************
-
-TOKWriteByte:	
+; \in A             Byte value to write to the token buffer
+; \sideeffects      - Writes byte to `tokenBuffer` at current `tokenOffset`
+;                   - Increments `tokenOffset` to next available position
+;                   - Preserves `X` and `A` registers
+; \see              tokenBuffer, tokenOffset
+;;
+TOKWriteByte:
 		phx
 		ldx 	tokenOffset 				; next slot to write to
 		sta 	tokenOffset,x 				; write byte out
@@ -133,14 +122,3 @@ TOKWriteByte:
 		rts
 
 		.send code
-
-; ************************************************************************************************
-;
-;									Changes and Updates
-;
-; ************************************************************************************************
-;
-;		Date			Notes
-;		==== 			=====
-;
-; ************************************************************************************************

@@ -14,11 +14,12 @@
 
 ; ************************************************************************************************
 ;
-;					
+;
 ;
 ; ************************************************************************************************
 
-UnaryPlaying: ;; [playing(]
+UnaryPlaying: ;; [playing]
+		jsr 	CheckLeftBracket
 		plx
 		;
 		jsr 	Evaluate8BitInteger 		; get channel #
@@ -33,7 +34,7 @@ UnaryPlaying: ;; [playing(]
 		beq 	_UPNotPlaying
 		jmp 	ReturnTrue
 _UPNotPlaying:
-		jmp 	ReturnFalse		
+		jmp 	ReturnFalse
 
 		.send code
 

@@ -20,8 +20,8 @@
 ; ************************************************************************************************
 
 Command_Try:	;; [try]
-		.cget 								; get first 
-		cmp 	#KWC_SHIFT1					; can only try in SHIFT_1
+		.cget 								; get first
+		cmp 	#KWC_KWDSET1				; can only try in KWDSET1
 		bne 	_TrySyntax
 		iny 								; get second
 		.cget
@@ -43,11 +43,11 @@ _TryBSave:
 		jsr 	BSaveHandler
 
 _TryExit:
-		pha 								; save result 
+		pha 								; save result
 		.cget 								; check for TO
 		iny
 		cmp 	#KWD_TO
-		bne 	_TrySyntax				
+		bne 	_TrySyntax
 
 		ldx 	#0 							; get an integer reference.
 		jsr 	EvaluateTerm
@@ -64,7 +64,7 @@ _TryExit:
 
 		.send code
 
-	
+
 ; ************************************************************************************************
 ;
 ;									Changes and Updates

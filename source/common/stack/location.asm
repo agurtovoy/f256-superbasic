@@ -19,6 +19,20 @@
 ;
 ; ************************************************************************************************
 
+;;
+; Save current code position and offset on the stack.
+;
+; Stores the current execution position (code pointer and Y register offset)
+; in the first 5 bytes above the current stack frame marker. This is used
+; by control structures and function calls to preserve the return location.
+;
+; \in Y         Current offset within the code line
+; \sideeffects  - Saves 4-byte code pointer (safePtr) to stack at offsets 1-4
+;               - Saves Y register offset to stack at offset 5
+;               - Preserves Y register across the operation
+; \see          STKLoadCodePosition, safePtr, basicStack
+;;
+
 STKSaveCodePosition:
 		phy
 		tya 								; save Y
@@ -38,7 +52,7 @@ _STKSaveLoop:
 ;							Load TOS into current code positions
 ;
 ; ************************************************************************************************
-		
+
 STKLoadCodePosition:
 		ldy 	#1 							; load code pointer back
 _STKLoadLoop:
@@ -51,7 +65,7 @@ _STKLoadLoop:
 		tay
 		.cresync
 		rts
-				
+
 		.send code
 
 ; ************************************************************************************************

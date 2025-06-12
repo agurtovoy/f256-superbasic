@@ -21,6 +21,19 @@ checknext .macro
 		.endm
 
 ;;
+; Check for left parenthesis '(' character.
+;
+; Validates that the next character in the statement is a left parenthesis
+; and advances the parser position past it.
+;
+; \in Y        Current parsing position in the statement.
+; \out Y       Updated parsing position after consuming the '(' character.
+; \sideeffects Jumps to `SyntaxError` if '(' is not found.
+;;
+CheckLeftBracket:
+		.checknext KWD_LPAREN
+
+;;
 ; Check for right parenthesis ')' character.
 ;
 ; Validates that the next character in the statement is a right parenthesis
