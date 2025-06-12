@@ -18,14 +18,15 @@
 ;
 ; ************************************************************************************************
 
-UnaryEvent: ;; [event(]
+UnaryEvent: ;; [event]
+		jsr 	CheckLeftBracket
 		plx
 		;
 		jsr 	TimerToStackX 				; timer in +0
 		inx  								; put reference into +1
 		jsr 	EvaluateTerm
 		lda 	NSStatus,x 					; check if is integer reference
-		cmp 	#NSTInteger+NSBIsReference 
+		cmp 	#NSTInteger+NSBIsReference
 		bne 	_UEType
 		;
 		inx 								; put the step in +2
