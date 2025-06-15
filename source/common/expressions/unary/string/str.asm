@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-Unary_Str: ;; [str$(]
+Unary_Str: ;; [str$]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	EvaluateNumber  			; get number
 		jsr 	CheckRightBracket 			; closing bracket
@@ -34,9 +35,9 @@ _USCopy:
 		lda 	decimalBuffer,x
 		jsr 	StringTempWrite
 		inx
-		lda 	decimalBuffer,x 			
+		lda 	decimalBuffer,x
 		bne 	_USCopy
-		plx		
+		plx
 		rts
 
 ; ************************************************************************************************
@@ -62,7 +63,7 @@ _CNTSNotNegative:
 
 		inx 								; round up so we don't get too many 6.999999
 		lda 	#1
-		jsr 	NSMSetByte		
+		jsr 	NSMSetByte
 		dex
 		lda		NSExponent,x
 		sta 	NSExponent+1,x
@@ -98,22 +99,22 @@ _CNTSExit:
 ; ************************************************************************************************
 ;
 ;		Make S[X] and integer, convert it to a string, and copy it to the decimal buffer
-;		
+;
 ; ************************************************************************************************
 
 MakePlusTwoString:
 		phx
-		jsr 	NSMShiftUpTwo 				; copy S[X] to S[X+2] - we will use S[X+2] for the intege part.		
+		jsr 	NSMShiftUpTwo 				; copy S[X] to S[X+2] - we will use S[X+2] for the intege part.
 		inx 								; access it
 		inx
 		jsr 	FloatIntegerPart 			; make it an integer
 		lda 	#10 						; convert it in base 10
-		jsr 	ConvertInt32 
+		jsr 	ConvertInt32
 		ldx	 	#0 							; write that to the decimal buffer.
 _MPTSCopy:
 		lda 	numberBuffer,x
 		jsr 	WriteDecimalBuffer
-		inx		
+		inx
 		lda 	numberBuffer,x
 		bne 	_MPTSCopy
 		plx
@@ -122,7 +123,7 @@ _MPTSCopy:
 ; ************************************************************************************************
 ;
 ;									Write A to Decimal Buffer
-;		
+;
 ; ************************************************************************************************
 
 WriteDecimalBuffer:
@@ -135,7 +136,7 @@ WriteDecimalBuffer:
 		rts
 
 		.send 	code
-		
+
 ; ************************************************************************************************
 ;
 ;									Changes and Updates

@@ -14,13 +14,13 @@
 
 ; ************************************************************************************************
 ;
-; 			Scan forward from current position looking for closing token A or X. 
+; 			Scan forward from current position looking for closing token A or X.
 ;			Return matching token in A
 ;
 ; ************************************************************************************************
 
 ScanForward:
-		stz 	zTemp1 						; zero the structure count - goes up with WHILE/FOR down with WEND/NEXT etc. 
+		stz 	zTemp1 						; zero the structure count - goes up with WHILE/FOR down with WEND/NEXT etc.
 		stx 	zTemp0+1
 		sta 	zTemp0 						; save X & A as the two possible matches.
 		;
@@ -36,13 +36,13 @@ _ScanLoop:
 		cmp 	zTemp0 						; see if either matches
 		beq 	_ScanMatch
 		cmp 	zTemp0+1
-		bne 	_ScanGoNext		
+		bne 	_ScanGoNext
 _ScanMatch:									; if so, exit after skipping that token.
 		cmp 	#KWC_EOL 					; if asked for EOL, backtrack.
 		bne 	_ScanNotEndEOL
 		dey
-_ScanNotEndEOL:		
-		rts 					
+_ScanNotEndEOL:
+		rts
 _ScanGoNext:
 		jsr  	ScanForwardOne 				; allows for shifts and so on.
 		bra 	_ScanLoop
@@ -53,7 +53,7 @@ _ScanGoNext:
 ;
 ; ************************************************************************************************
 
-ScanForwardOne:		
+ScanForwardOne:
 		cmp 	#$40 						; if 00-3F, punctuation characters, already done.
 		bcc 	_SFWExit
 		;
@@ -63,23 +63,23 @@ ScanForwardOne:
 		cmp 	#$FC 						; FC-FF are data skips (hex consts, strings etc.)
 		bcs 	_ScanSkipData
 		;
-		cmp 	#KWC_FIRST_STRUCTURE 		; structure keyword ?
+		cmp 	#KWC_FIRST_STRUCT 			; structure keyword ?
 		bcc 	_SFWExit 					; if not, ordinary keywords.
-		cmp 	#KWC_LAST_STRUCTURE+1
+		cmp 	#KWC_LAST_STRUCT+1
 		bcs 	_SFWExit
 		;
 		;		Structure code - can go up and down.
 		;
 		dec 	zTemp1 						; decrement the sructure count
-		cmp 	#KWC_FIRST_STRUCTURE_DEC 	; back if it is a dec structure (e.g. WEND/NEXT)
+		cmp 	#KWC_FIRST_STRUCTEND 		; back if it is an end of structured statement (e.g. WEND/NEXT)
 		bcs 	_SFWExit
-		inc 	zTemp1 						; so it's an increment structure
+		inc 	zTemp1 						; it's a beginning of structured statement (e.g. WHILE/FOR)
 		inc 	zTemp1 						; twice to undo the dec
 		bra 	_SFWExit
 		;
 		;		+2 ; for 40-7F (Variable) 80 (New line) and 81-82 (Shifts)
 		;
-_ScanSkipOne:		
+_ScanSkipOne:
 		iny 								; consume the extra one.
 		cmp 	#KWC_EOL 					; if not EOL loop back
 		bne 	_SFWExit
@@ -112,14 +112,14 @@ ScanGetCurrentLineStep:
 _SGCLSLoop:
 		.cget 								; next and consume ?
 		iny
-		cmp 	#KWC_EOL	 				; if EOL exit	
-		beq 	_SGCLSExit 
+		cmp 	#KWC_EOL	 				; if EOL exit
+		beq 	_SGCLSExit
 		jsr 	ScanForwardOne
 		bra 	_SGCLSLoop
 _SGCLSExit:
 		lda 	zTemp1 						; return the adjustment
 		rts
-				
+
 		.send code
 
 ; ************************************************************************************************

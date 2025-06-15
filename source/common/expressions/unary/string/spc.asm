@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-SpcUnary: ;; [spc(]	
+SpcUnary: ;; [spc]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	Evaluate8BitInteger			; get value
 		phy
@@ -28,7 +29,7 @@ SpcUnary: ;; [spc(]
 		ply 								; to do count in Y
 _SpcLoop:
 		cpy 	#0 							; copy Y spaces in.
-		beq 	_SpcExit		
+		beq 	_SpcExit
 		lda 	#32
 		jsr 	StringTempWrite
 		dey

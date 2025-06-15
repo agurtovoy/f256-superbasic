@@ -18,12 +18,13 @@
 ;
 ; ************************************************************************************************
 
-UnaryJoyX: ;; [joyx(]
+UnaryJoyX: ;; [joyx]
 		clc
 		bra 	JoyMain
-UnaryJoyY: ;; [joyy(]
+UnaryJoyY: ;; [joyy]
 		sec
 JoyMain:
+		jsr 	CheckLeftBracket
 		plx 								; get pos
 		php 								; save carry (set for Y)
 		jsr 	Evaluate8BitInteger 		; ignore the parameter
@@ -46,9 +47,10 @@ JMIsLeft:
 JMIsRight:
 		lda 	#1
 		jsr 	NSMSetByte
-		rts				
+		rts
 
-UnaryJoyB: ;; [joyb(]
+UnaryJoyB: ;; [joyb]
+		jsr 	CheckLeftBracket
 		plx 								; get pos
 		jsr 	Evaluate8BitInteger 		; ignore the parameter
 		jsr 	CheckRightBracket
@@ -56,7 +58,7 @@ UnaryJoyB: ;; [joyb(]
 		and 	#$10
 		bne 	JMIsLeft
 		jsr 	NSMSetZero
-		rts				
+		rts
 
 		.send code
 
