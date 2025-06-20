@@ -1,24 +1,28 @@
-; ************************************************************************************************
-; ************************************************************************************************
-;
-;		Name:		searchtokens.asm
-;		Purpose:	Seach token table for a specific identifier
-;		Created:	19th September 2022
-;		Reviewed: 	23rd November 2022
-;		Author:		Paul Robson (paul@robsons.org.uk)
-;
-; ************************************************************************************************
-; ************************************************************************************************
+;;
+; Identifier lookup
+;;
 
 		.section code
 
-; ************************************************************************************************
+;;
+; Search token table for a specific identifier.
 ;
-;	Search the token table at YA for the currently selected identifier. Returns CS and token ID
-; 	in A if found, CC if not found
+; Searches through a token table looking for an identifier that matches the
+; currently selected identifier in the line buffer. The search uses a three-stage
+; matching process: hash comparison, length comparison, and finally character-by-
+; character text comparison for efficiency.
 ;
-; ************************************************************************************************
-
+; \in Y              High byte of token table address
+; \in A              Low byte of token table address
+; \in identHash      Hash value of the identifier to search for
+; \in identStart     Start index of the identifier in the line buffer
+; \in identTypeEnd   End index of the identifier in the line buffer
+; \out A             Token ID if found (with carry set)
+; \out C             Set if token found, clear if not found
+; \sideeffects       - Modifies `zTemp0`, `zTemp1` for table navigation
+;                    - Modifies registers `A`, `Y`, and `X` during the search
+; \see               identHash, identStart, identTypeEnd, lineBuffer
+;;
 TOKSearchTable:
 		sty 	zTemp0+1 					; (zTemp0),y points to current token being tested.
 		sta 	zTemp0
@@ -52,7 +56,7 @@ _TSTLoop:
 		;		Hash and length match, now compare actual text
 		;
 		phy 								; save Y , we might fail to match.
-		iny 								; point to text 	
+		iny 								; point to text
 		iny
 		ldx 	identStart 					; offset in line buffer in X
 _TSTCompareName:
@@ -71,10 +75,10 @@ _TSTCompareName:
 		;		Go onto next token, optionally restoring Y
 		;
 _TSTNextPullY:
-		ply 								; restore current, fall through.		
+		ply 								; restore current, fall through.
 		;
 		;		Go to next token.
-		;		
+		;
 _TSTNext:
 		inc 	zTemp1 						; token counter
 		tya
@@ -82,7 +86,7 @@ _TSTNext:
 		adc 	(zTemp0),y 					; add [Length] + 2 to Y
 		inc 	a 							; +1
 		inc 	a 							; +2
-		tay 			
+		tay
 		bpl 	_TSTLoop 					; if Y < $80 loop back
 		;
 		;		The index into the token table is > 128, we now adjust this so
@@ -97,19 +101,8 @@ _TSTNext:
 		inc 	zTemp0+1
 		bra 	_TSTLoop
 
-_TSTFail:		
+_TSTFail:
 		clc
 		rts
-				
-		.send code
 
-; ************************************************************************************************
-;
-;									Changes and Updates
-;
-; ************************************************************************************************
-;
-;		Date			Notes
-;		==== 			=====
-;
-; ************************************************************************************************
+		.send code

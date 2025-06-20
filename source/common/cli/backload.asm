@@ -29,11 +29,11 @@ BackloadProgram:
 		.set16 	BackLoadPointer,$6000 		; and load from there.
 
 		stz 	BackLoadLast 				; reset backload last.
-		stz 	BackLoadLast+1 
+		stz 	BackLoadLast+1
 
 		lda 	#$FF
 		sta 	$FFFA
-_BPLoop:		
+_BPLoop:
 		ldx 	#$FF
 
 		jsr 	BLReadByte 					; read a byte
@@ -49,11 +49,11 @@ _BPCopy:
 		cmp 	#9 							; handle TAB, make it space.
 		bne 	_BPNotTab
 		lda 	#' '
-_BPNotTab:		
+_BPNotTab:
 		cmp 	#' ' 						; < ' ' = EOL
 		bcs 	_BPCopy 					; until a control character, should be 13 received.
-_BPEndLine:		
-		jsr 	TKTokeniseLine 				; tokenise the line.
+_BPEndLine:
+		jsr 	TKTokenizeLine 				; tokenize the line.
 
 		lda 	tokenLineNumber 			; line number = 0
 		ora 	tokenLineNumber+1
@@ -118,7 +118,7 @@ BLReadByte:
 		sta 	8+3
 
 		lda 	BackLoadPointer 			; copy pointer to zTemp0
-		sta 	zTemp0 	
+		sta 	zTemp0
 		lda 	BackLoadPointer+1
 		sta 	zTemp0+1
 		lda 	(zTemp0) 					; read next byte
@@ -133,7 +133,7 @@ BLReadByte:
 		pla
 _BLNoCarry:
 		stx 	8+3 						; restore mapping, then X.
-		plx		
+		plx
 
 		cmp 	#0
 		rts
@@ -141,11 +141,11 @@ _BLNoCarry:
 
 		.section storage
 BackLoadPage:
-		.fill  	1		
+		.fill  	1
 BackLoadPointer:
 		.fill 	2
 BackLoadLast:
-		.fill 	2		
+		.fill 	2
 		.send storage
 
 ; ************************************************************************************************
