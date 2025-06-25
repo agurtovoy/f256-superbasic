@@ -22,7 +22,7 @@ Command_Restore:	;; [restore]
 		jsr 	SwapDataCodePtrs 			; swap code and data
 		.cresetcodepointer 					; back to the start
 		jsr 	SwapDataCodePtrs 			; put them back
-		lda 	#3 							; start at offset 3, e.g. first instruction of first line.
+		lda 	#global.FIRST_TOKEN_OFFSET	; start at the first instruction of first line.
 		sta 	dataPointer+4   			; (read checks not EOF)
 		stz 	inDataStatement 			; not in data statement
 		rts
@@ -52,7 +52,7 @@ _SDCPLoop:
 		;
 		.cresync 							; sync up hardware
 		plx
-		rts				
+		rts
 
 		.send code
 

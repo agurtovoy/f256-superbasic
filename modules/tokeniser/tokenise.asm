@@ -1,343 +1,549 @@
-; ************************************************************************************************
-; ************************************************************************************************
+;;
+; Line tokenizer
 ;
-;		Name:		tokenise.asm
-;		Purpose:	Tokenise Line
-;		Created:	18th September 2022
-;		Reviewed: 	23rd November 2022
-;		Author:		Paul Robson (paul@robsons.org.uk)
+; Tokenized lines are stored in the following format:
 ;
-; ************************************************************************************************
-; ************************************************************************************************
+;	- A one-byte offset to the next line ($00 means end of program)
+;	- A two-byte low/high line number
+;	- The tokenized line
+;	- EOL token
+;;
 
 		.section code
 
-
-; ************************************************************************************************
+;;
+; Tokenize ASCIIZ line in the line buffer.
 ;
-;								Tokenise ASCIIZ line in lineBuffer
+; Converts a source line from ASCII text format into tokenized format for
+; faster interpretation. The tokenized line is stored in `tokenBuffer`
+; starting at `tokenOffset`. Handles line numbers, keywords, identifiers,
+; strings, hex constants, and punctuation tokens.
 ;
-; ************************************************************************************************
-
-Export_TKTokeniseLine:
+; \in lineBuffer        ASCIIZ string containing the input line to tokenize.
+; \out tokenBuffer      Tokenized representation of the input line.
+; \out tokenOffset      Updated to point after the tokenized line.
+; \out tokenLineNumber  Set to extracted line number (if present), otherwise 0.
+; \sideeffects          - Modifies registers `A`, `X`, `Y`.
+;                       - Resets token buffer to empty (3 bytes for line number & offset).
+;                       - May create variable records for new identifiers.
+; \see                  TOKExtractLineNumber, TOKIdentifier, TOKTokenString,
+;                       TOKHexConstant,,TOKSearchTable, TOKCheckCreateVariableRecord
+;;
+Export_TKTokenizeLine:
 		;
-		;		Make the line buffer UpperCase outside quoted strings
+		;		Reset the token buffer and line number
 		;
-		jsr 	LCLFixLineBufferCase 		; fix line case
-		;
-		;		Erase the tokenised line to empty
-		;
-		lda 	#3 							; reset the token buffer to empty
-		sta 	tokenOffset 				; (3 bytes for line number & offset)
-		stz 	tokenLineNumber
+		lda 	#global.FIRST_TOKEN_OFFSET
+		sta 	tokenOffset 				; (offset for the line number etc.)
+		stz 	tokenLineNumber				; reset token line number
 		stz 	tokenLineNumber+1
 		;
-		;		Find the first non space character
+		;		Find the first non-space character
 		;
-		ldx 	#$FF
-_TKFindFirst:
+		ldx 	#-1							; Keep the current char's offset in X
+											; (pre-increments to 0 below)
+	_find_first:
 		inx
-		lda 	lineBuffer,x
-		beq 	_TKExit
+		lda 	lineBuffer,x				; next character, exit if zero EOL
+		beq 	_exit
 		cmp 	#' '
-		bcc 	_TKFindFirst
+		bcc 	_find_first					; keep looping if space found
 		;
-		;		If it is 0-9 extract a 2 byte integer into the token line number
-		;		(because the input line is an editing one)
+		;		If the current char is 0-9, we're editing a program line,
+		;		extract a 2 byte integer into the token line number
 		;
 		cmp 	#'0'
-		bcc 	_TKNoLineNumber
+		bcc 	_no_line_number
 		cmp 	#'9'+1
-		bcs 	_TKNoLineNumber
+		bcs 	_no_line_number
 		jsr 	TOKExtractLineNumber
-_TKNoLineNumber:		
-		;----------------------------------------------------------------------------------------
-		;
-		;							Main tokenising loop
-		;
-		;----------------------------------------------------------------------------------------
 
-_TKTokeniseLoop:
+	_no_line_number:
+
+		; Main tokenizing loop
+
+	_tokenize_loop:
 		lda 	lineBuffer,x 				; next character, exit if zero EOL.
-		beq 	_TKExit
+		beq 	_exit
 		inx
 		cmp 	#' '
-		beq 	_TKTokeniseLoop 			; keep looping if space found.
+		beq 	_tokenize_loop  			; keep looping if space found.
 		dex 								; undo last get, A contains character, X is position.
-		;
-		cmp 	#'_'						; _ A-Z is identifier *or* token
-		beq 	_TKTokeniseIdentifier 		; (already case converted outside string constants)
-		cmp 	#'A'
-		bcc 	_TKTokenisePunctuation 
+
+		; See https://en.wikipedia.org/wiki/ASCII#Character_set
+
+		bcc 	_nonprintable				; a non-printable control char
+
+		cmp 	#'0'						; check for digits
+		bcc 	_punctuation
+		cmp 	#'9'+1
+		bcc 	_decimal
+
+		cmp 	#'A'						; check for [A-Z_]
+		bcc 	_punctuation
 		cmp 	#'Z'+1
-		bcc 	_TKTokeniseIdentifier
+		bcc 	_identifier
+		cmp 	#'_'
+		beq 	_identifier
 
-		;----------------------------------------------------------------------------------------
-		;
-		;		So we now have a punctuation character. Special cases are those >= 64 and < or > 
-		;		followed by = > or < and quoted strings. 
-		;
-		; 		For 64 conversion see the punctuation.ods
-		;
-		;----------------------------------------------------------------------------------------
+		; lower-case characters or punctuation
+		cmp 	#'a'						; check for [a-z]
+		bcc 	_punctuation
+		cmp 	#'z'+1
+		bcs 	_punctuation
 
-_TKTokenisePunctuation:
-		cmp 	#'"'						; quoted string ?
-		beq 	_TKString
-		cmp 	#'$'						; hexadecimal constant ($ only appears at end of identifiers)
-		beq 	_TKHexConstant
-		cmp 	#'<' 						; check for < > handlers - these are for <> <= >= >> <<
-		beq 	_TKCheckDouble
+		; lower-case character found, convert to upper-case
+		eor 	#$20						; convert to upper-case
+		bra		_identifier
+
+		; If we got here, we have a punctuation character, a DEL, or an
+		; extended ASCII char. Special cases are:
+		;
+		;    - punctuation char codes > KWC_LAST_PUNCTUATION
+		;    - `<` or `>` followed by `=`, `>`, or `<` (double punctuation)
+		;    - `"` for string literals
+		;    - `$` for hexadecimal constants
+		;    - `.` followed by 0 to 9 for floating point constants
+		;
+		; See `PunctuationToken.generate_all` in `tokens.py`.
+
+	_punctuation:
+		cmp 	#'"'						; string literal
+		beq 	_string
+		cmp 	#'$'						; hexadecimal constant (`$` only
+		beq 	_hex_const					; appears at end of identifiers)
+		cmp 	#'<' 						; check for double punctuation
+		beq 	_check_double_punct
 		cmp 	#'>'
-		beq 	_TKCheckDouble
-_TKStandardPunctuation:
-		lda 	lineBuffer,x 				; get the punctuation token back.
-		cmp 	#64 						; are we >= 64
-		bcc 	_TKNoShift
-		pha 								; save. we are about to convert this punctuation token from
-											; 64-127 to 16-31 (see punctuation.ods)
+		beq 	_check_double_punct
+		cmp 	#'.'
+		beq 	_check_decimal
+
+	_single_punct:
+		lda 	lineBuffer,x 				; load the punctuation token back into `A`
+		cmp 	#KWC_LAST_PUNCTUATION + 1 	; are we outside of the punctuation tokens range?
+		bcc 	_save_punct
+
+		; If we got here, we have an extended punctuation character (ASCII 64-126),
+		; a DEL (ASCII 127), or an extended ASCII character (ASCII 128-255).
+
+		cmp 	#127 						; check if it's a DEL
+		beq 	_nonprintable 				; translate DEL to a non-printable token
+		bcs     _extended_ascii 			; 128 or higher is extended ASCII
+
+		; Extended punctuation characters are mapped to token IDs 16-31,
+		; see `tokens.py`/`kwdconst.inc`.
+
+		pha 								; save A on the stack
 		and 	#7 							; lower 3 bits in zTemp0
 		sta 	zTemp0
 		pla
 		and 	#32 						; bit 5
 		lsr 	a 							; shift into bit 3
 		lsr 	a
-		ora 	zTemp0 
+		ora 	zTemp0
 		ora 	#$10						; now in the range 16-31
-_TKNoShift:		
+
+	_save_punct:
 		jsr 	TOKWriteByte 				; write the punctuation character
 		inx 								; consume the character
-		cmp 	#KWD_QUOTE 					; quote found ?
-		bne 	_TKTokeniseLoop 			; and loop round again.
-		jsr 	TOKCheckComment 			; comment checl
-		bra 	_TKTokeniseLoop
-		;
-		;		String tokeniser.
-		;
-_TKString: 									; tokenise a string "Hello world"
+
+		cmp 	#KWD_QUOTE 					; check for single quote (') comment
+		bne 	_tokenize_loop  			;
+		jsr 	TOKTokenComment 			; tokenize comment text
+		bra 	_tokenize_loop
+
+		; exit point, writes EOL and returns
+	_exit:
+		lda 	#KWC_EOL 					; write end of line byte
+		jsr 	TOKWriteByte
+		rts
+
+	_identifier:
+		jsr     TOKIdentifier				; tokenize an identifier or keyword
+		bra 	_tokenize_loop
+
+	_decimal:								; tokenize a decimal constant, e.g. 42 or 3.14
+		jsr 	TOKTokenDecimal
+		bra 	_tokenize_loop
+
+	_string:								; tokenize a string "Hello world"
 		jsr 	TOKTokenString
-		bra 	_TKTokeniseLoop
-_TKHexConstant: 							; tokenise hex constant #A277
+		bra 	_tokenize_loop
+
+	_hex_const:								; tokenize hex constant #A277
 		jsr 	TOKHexConstant
-		bra 	_TKTokeniseLoop
+		jmp 	_tokenize_loop
 
-		;----------------------------------------------------------------------------------------
-		;
-		;		Exit point, writes EOL and returns
-		;
-		;----------------------------------------------------------------------------------------
+	_nonprintable:
+		._write_ext_char_token KWC_NONPRINTABLE
+		jmp 	_tokenize_loop
 
-_TKExit:lda 	#KWC_EOL 					; write end of line byte
-		jsr 	TOKWriteByte		
-		rts	
+		; We have `<` or `>`, check if the following character is `<`, `=`, or `>`.
+		; The double punctuation is mapped to IDs $08-$0f, see `tokens.py`/`kwdconst.inc`.
 
-		;----------------------------------------------------------------------------------------
-		;
-		;		Have < or >. Check following character is < = >. These are mapped onto 
-		;		codes 0-5 for << >> <= >= <> , see punctuation.ods
-		;
-		;----------------------------------------------------------------------------------------
-
-_TKCheckDouble:
+	_check_double_punct:
 		lda 	lineBuffer+1,x 				; get next character
-		cmp 	#'<'						; if not < = > which are ASCII consecutive go back
-		bcc 	_TKStandardPunctuation 		; and do the normal punctuation handler.
+		cmp 	#'<'						; if not <, =, or >, which are consecutive,
+		bcc 	_single_punct 				; go back to the single punctuation handler
 		cmp 	#'>'+1
-		bcs 	_TKStandardPunctuation
+		bcs 	_single_punct
 		;
 		lda 	lineBuffer,x 				; this is < (60) or > (62)
 		and 	#2 							; now < (0) or > (2)
 		asl 	a 							; now < (0) or > (4), CC also
 		adc 	lineBuffer+1,x 				; add < = > codes - < code
 		sec
-		sbc 	#'<' 
-		jsr 	TOKWriteByte 				; this is in the range 0-7
-		inx 								; consume both
+		sbc 	#('<' - KWC_FIRST_PUNCTUATION)
+		jsr 	TOKWriteByte 				; this is in the range KWC_FIRST_PUNCTUATION + 0-7
+		inx 								; consume both chars
 		inx
-		bra 	_TKTokeniseLoop
+		jmp 	_tokenize_loop
 
-		;----------------------------------------------------------------------------------------
-		;
-		;		Found _ or A..Z, which means an identifier or a token.
-		;
-		;----------------------------------------------------------------------------------------
+	_check_decimal:
+		lda 	lineBuffer+1,x 				; peek next character
+		cmp 	#'0'						; if not 0-9, then it's a single
+		bcc 	_single_punct				; punctuation, go back
+		cmp 	#'9'+1
+		bcs 	_single_punct
+		bra 	_decimal
 
-_TKTokeniseIdentifier:		
-		stx 	identStart 					; save start
-		stz 	identTypeByte 				; zero the type byte
-_TKCheckLoop:
-		inx 								; look at next, we know first is identifier already.
+	_extended_ascii:
+		._write_ext_char_token KWC_EXTASCII
+		jmp 	_tokenize_loop
+
+;;
+; Write extended character token macro.
+;
+; Outputs a data token followed by the extended character byte. Used for
+; non-printable control characters and extended ASCII characters that cannot
+; be represented as simple punctuation tokens.
+;
+; \in \1        Token ID to write (`KWC_NONPRINTABLE` or `KWC_EXTASCII`)
+; \in A         Character byte to write after the token
+; \sideeffects  - Writes token ID and character byte to token buffer
+; \see          TOKWriteByte, KWC_NONPRINTABLE, KWC_EXTASCII
+;;
+_write_ext_char_token .macro
+		pha									; save A on the stack
+		lda 	#(\1) 						; write out the corresponding token
+		jsr 	TOKWriteByte 				;
+		pla									; restore A
+		jsr 	TOKWriteByte 				; write the extended ASCII character
+		inx									; consume the character
+		.endm
+
+;;
+; Tokenize identifier or keyword.
+;
+; Processes an identifier starting with A-Z or underscore, extracting the complete
+; identifier including optional type suffixes (`#` for float, `$` for string) and
+; checking if it matches any keywords in the token tables. If not found as a
+; keyword, creates or updates a variable record for the identifier.
+;
+; \in X         Current position in `lineBuffer` (pointing at first identifier character)
+; \out X        Updated position after the identifier and any type suffix
+; \sideeffects  - Sets `identStart`, `identTypeStart`, `identTypeEnd`, `identTypeByte` globals
+;               - Writes keyword token(s) if identifier matches a keyword
+;               - Creates variable record if identifier is not a keyword
+;               - May write `KWC_COMMENT` token for REM statements
+; \see          TOKCalculateHash, TOKSearchTable, TOKCheckCreateVariableRecord,
+;               TOKTokenComment, KeywordSet0, KeywordSet1, KeywordSet2
+;;
+TOKIdentifier:
+		stx 	identStart 					; save identifier's start offset
+		stz 	identTypeByte 				; reset identifier's type to integer
+
+	_loop:
+		inx 								; look at next, we know first is identifier already
 		lda  	lineBuffer,x
-		cmp 	#"_" 						; legal char _ 0-9 A-Z
-		beq 	_TKCheckLoop
+		; legal chars are 0-9, A-Z, _, a-z
 		cmp	 	#"0"
-		bcc 	_TKEndIdentifier
+		bcc 	_end_identifier
 		cmp 	#"9"+1
-		bcc 	_TKCheckLoop
+		bcc 	_loop
 		cmp	 	#"A"
-		bcc 	_TKEndIdentifier
+		bcc 	_end_identifier
 		cmp 	#"Z"+1
-		bcc 	_TKCheckLoop
-_TKEndIdentifier:
-		;
-		;		Look for # or $ type
-		;
+		bcc 	_loop
+		cmp 	#"_"
+		beq 	_loop
+		cmp	 	#"a"
+		bcc 	_end_identifier
+		cmp 	#"z"+1
+		bcc 	_loop
+
+	_end_identifier:
+		; Look for # or $ type
+
 		stx 	identTypeStart 				; save start of type text (if any !)
 		;
-		ldy 	#$08 						; this is the identifier type byte for #
-		cmp 	#"#"						; followed by #
-		beq 	_TKHasTypeCharacter
-		ldy 	#$10 						; this is the identifier type byte for $
-		cmp 	#"$"						; followed by $ or #
-		bne 	_TKNoTypeCharacter
-_TKHasTypeCharacter:
-		sty 	identTypeByte 				; has # or $, save the type
-		inx 								; consume the type character		
+		ldy 	#NSTFloat 					; check for a float identifier
+		cmp 	#"#"
+		beq 	_has_type_char
+		ldy 	#NSTString					; check for a string identifier
+		cmp 	#"$"
+		bne 	_no_type_char
+
+	_has_type_char:
+		sty 	identTypeByte 				; Y has # or $, save the type
+		inx 								; consume the type character
 		lda 	lineBuffer,x
-		;
-		;		Look for array
-		;
-_TKNoTypeCharacter:
-		cmp 	#"("						; is it open parenthesis (e.g. array)
-		bne 	_TKNoArray
-		inx 								; skip the (
-		lda 	identTypeByte 				; set bit 2 (e.g. array) in type byte
-		ora 	#$04
-		sta 	identTypeByte
-_TKNoArray:		
+
+		; Look for array
+
+	_no_type_char:
+; 		cmp 	#"("						; is it open parenthesis (e.g. array)
+; 		bne 	_TKNoArray
+; 		inx 								; skip the (
+; 		lda 	identTypeByte 				; set bit 2 (e.g. array) in type byte
+; 		ora 	#$04
+; 		sta 	identTypeByte
+; _TKNoArray:
 		stx 	identTypeEnd 				; save end marker, e.g. continue from here.
-		jsr 	TOKCalculateHash 			; calculate the has for those tokens
+		jsr 	TOKCalculateHash 			; calculate the hash for those tokens
 
-		;----------------------------------------------------------------------------------------
-		;
-		;			Search the token tables, to see if this is actually a keyword.
-		;			*all* keywords are identifier-compliant.
-		;
-		;----------------------------------------------------------------------------------------
+		; Search the token tables to see if this is a keyword
+		; (all keywords are identifier-compliant)
 
-checktokens .macro 			
+		._check_tokens KeywordSet0			; check the three token tables for the keyword
+		ldx 	#0
+		bcs 	_found_token
+
+		._check_tokens KeywordSet1
+		ldx 	#KWC_KWDSET1 				; if not found, check for KWDSET1
+		bcs 	_found_token
+
+		._check_tokens KeywordSet2			; if not found, check for KWDSET2
+		ldx 	#KWC_KWDSET2
+		bcs 	_found_token
+
+		; No keyword found, so it's a procedure or a variable declaration
+
+		jsr 	TOKCheckCreateVariableRecord ; failed all, it's a variable,
+											; create record if does not exist
+
+		ldx 	identTypeEnd 				; X points to following byte
+		bra 	_exit
+
+		; Found a token, `X` contains the keyword set, `A` the token
+
+	_found_token:
+		pha 								; save token
+		txa 								; token set in X, is there one ?
+		beq 	_skip_token_set_write
+		jsr 	TOKWriteByte 				; if so, write it out
+
+	_skip_token_set_write:
+		pla 								; restore and write token
+		jsr 	TOKWriteByte
+		cpx 	#0 							; check for REM, which is in the main token set
+		bne 	_not_rem
+		cmp 	#KWD_REM
+		bne 	_not_rem
+		ldx 	identTypeEnd 				; tokenize comment text
+		jsr 	TOKTokenComment
+		bra 	_exit
+
+	_not_rem:
+		ldx 	identTypeEnd 				; X points to following byte
+		bra 	_exit
+
+	_exit:
+		rts
+
+;;
+; Check token tables macro.
+;
+; Searches the specified keyword table for the current identifier. Sets up the
+; table address in Y:A and calls `TOKSearchTable` to perform the lookup.
+;
+; \in \1        Address of keyword table to search (e.g. `KeywordSet0`)
+; \out A        Token ID if found (with carry set)
+; \out C        Set if token found, clear if not found
+; \see          TOKSearchTable, KeywordSet0, KeywordSet1, KeywordSet2
+;;
+_check_tokens .macro
 		ldy 	#(\1) >> 8
 		lda 	#(\1) & $FF
 		jsr 	TOKSearchTable
 		.endm
 
-		.checktokens KeywordSet0			; check the three token tables for the keyword.
-		ldx 	#0 							
-		bcs 	_TKFoundToken
-		.checktokens KeywordSet1
-		ldx 	#$81
-		bcs 	_TKFoundToken
-		.checktokens KeywordSet2
-		ldx 	#$82
-		bcs 	_TKFoundToken
-
-		;----------------------------------------------------------------------------------------
-		;
-		;			 No shift found, so it's a procedure or a variable declaration
-		;
-		;----------------------------------------------------------------------------------------
-
-		jsr 	TOKCheckCreateVariableRecord ; failed all, it's a variable, create record if does not exist.
-		ldx 	identTypeEnd 				; X points to following byte
-		jmp 	_TKTokeniseLoop 			; and go round again.
-
-		;----------------------------------------------------------------------------------------
-		;
-		;			Found a token, X contains the shift ($8x or 0), A the token
-		;
-		;----------------------------------------------------------------------------------------
-
-_TKFoundToken:
-		pha 								; save token
-		txa 								; shift in X, is there one ?
-		beq 	_TKNoTShift
-		jsr 	TOKWriteByte 				; if so, write it out
-_TKNoTShift:
-		pla 								; restore and write token
+;;
+; Tokenize comment text.
+;
+; Processes comment text following REM statements or single quote (') characters.
+; The comment is stored as a `KWC_COMMENT` token followed by a data block containing
+; all remaining text on the line up to the end-of-line marker.
+;
+; \in X         Current position in `lineBuffer` (pointing at start of comment text)
+; \out X        Updated position at end of line
+; \sideeffects  - Writes `KWC_COMMENT` token to token buffer
+;               - Writes comment text data block to token buffer
+;               - Advances through `lineBuffer` to end of line
+; \see          TOKWriteByte, TOKWriteBlockXY, lineBuffer, tokenBuffer
+;;
+TOKTokenComment:
+		lda 	#KWC_COMMENT 				; comment token
 		jsr 	TOKWriteByte
-		cpx 	#0 							; check for REM and '
-		bne 	_TKNotRem 			 		; not shifted ?
-		cmp 	#KWD_REM
-		bne 	_TKNotRem
-		ldx 	identTypeEnd 				; check if comment follows.
-		jsr 	TOKCheckComment
-		jmp 	_TKTokeniseLoop
-
-_TKNotRem:		
-		ldx 	identTypeEnd 				; X points to following byte
-		jmp 	_TKTokeniseLoop 			; and go round again.
-
-; ************************************************************************************************
-;
-;		Comment check for REM and ' - check if quoted string/EOL follows, if not, insert
-;		rest of line as comment.
-;
-; ************************************************************************************************
-
-TOKCheckComment:
-		lda 	lineBuffer,x 				; skip over space
+		inx									; start of the comment text
+		phx 								; save it on the stack
+		dex 								; because we pre-increment
+	_find_end:
 		inx
-		cmp 	#' '
-		beq 	TOKCheckComment
-		dex 								; first non space character
-		cmp 	#'"'						; quote mark
-		beq 	_TOKCCExit 					; then we are okay
-		cmp 	#0 							; EOL
-		beq 	_TOKCCExit 					; then we are okay
-		phx
-_TOKCCLowerCase: 							; the pre-processing capitalises it. I did think
-		lda 	lineBuffer,x 				; about making it lower case it all, but I thought
-		cmp 	#"A"		 				; that was a bit risky. So it's converted to L/C here.
-		bcc 	_TOKKCNotUC
-		cmp 	#"Z"+1
-		bcs 	_TOKKCNotUC
-		eor 	#$20
-		sta 	lineBuffer,x
-_TOKKCNotUC:		
-		inx
-		cmp 	#0
-		bne 	_TOKCCLowerCase
-		plx
-		dex 								; tokenise string expects initial skip.
-		jsr 	TOKTokenString 				; tokenise rest of line as a string.
-_TOKCCExit:		
+		lda 	lineBuffer,x 				; next character
+		bne 	_find_end
+
+		ply  								; restore the comment start into `Y`
+		jsr 	TOKWriteBlockXY 			; write chars `X` to `Y` as a data block
 		rts
 
-; ************************************************************************************************
-;
-;									Tokenise a string.
-;
-; ************************************************************************************************
 
+;;
+; Tokenize string literal.
+;
+; Parses a string literal enclosed in quotes and stores it as a `KWC_STRING`
+; token followed by a data block containing the string contents and a null
+; terminator.
+;
+; \in X         Current position in `lineBuffer` (pointing at opening quote)
+; \out X        Updated position after the string (past closing quote or end of line)
+; \sideeffects  - Writes `KWC_STRING` token to token buffer
+;               - Writes string data block to token buffer
+;               - Advances through `lineBuffer` until closing quote or end of line
+; \see          TOKWriteByte, TOKWriteBlockXY, lineBuffer, tokenBuffer
+;;
 TOKTokenString:
 		lda 	#KWC_STRING 				; string token.
 		jsr 	TOKWriteByte
 		inx									; start of quoted string.
 		phx 								; push start of string on top
 		dex 								; because we pre-increment
-_TSFindEnd:							
+	_find_end:
 		inx
 		lda 	lineBuffer,x 				; next character
-		beq 	_TSEndOfString 				; no matching quote, we don't mind.
+		beq 	_end_of_string 				; no matching quote, we don't mind.
 		cmp 	#'"' 						; go back if quote not found
-		bne 	_TSFindEnd
+		bne 	_find_end
 		;
-_TSEndOfString:
-		ply  								; so now Y is first character, X is character after end.		
+	_end_of_string:
+		ply  								; so now Y is first character,
+											; X is character after end
+
 		pha 								; save terminating character
 		jsr 	TOKWriteBlockXY 			; write X to Y as a data block
 		pla 								; terminating character
-		beq 	_TSNotQuote					; if it wasn't EOS skip it
+		beq 	_exit						; if it wasn't EOS skip it
 		inx
-_TSNotQuote:		
-		rts		
+	_exit:
+		rts
 
-; ************************************************************************************************
+;;
+; Tokenize hexadecimal constant.
 ;
-;				Write Y to X with a trailing NULL - used for any block data.
+; Parses a hexadecimal constant and converts it into a `KWC_HEXCONST` token,
+; followed by a data block containing the hex digits and a null terminator.
 ;
-; ************************************************************************************************
+; \in X         Current position in `lineBuffer` (pointing at '$' character)
+; \out X        Updated position after the hex constant
+; \sideeffects  - Writes `KWC_HEXCONST` token to token buffer
+;               - Writes hex digit data block to token buffer
+;               - Advances through `lineBuffer` consuming hex digits [0-9A-F]
+; \see          TOKWriteByte, TOKWriteBlockXY, lineBuffer, tokenBuffer
+;;
+TOKHexConstant:
+		lda 	#KWC_HEXCONST 				; hex constant token
+		jsr 	TOKWriteByte
+		inx									; point `X` to the first hex digit
+		phx 								; push start of constant on top
+		dex
+	_find_loop:
+		inx 	 							; this is stored in a block, so find
+		lda 	lineBuffer,x 				; out how long the hex constant is
+		cmp 	#"0"
+		bcc 	_found
+		cmp 	#"9"+1
+		bcc 	_find_loop
+		cmp 	#"A"
+		bcc 	_found
+		cmp 	#"F"+1
+		bcc 	_find_loop
+	_found:
+		ply 								; restore start
+		jsr 	TOKWriteBlockXY 			; output the block
+		rts
 
+;;
+; Tokenize decimal constant.
+;
+; Parses a decimal number (integer or floating point) and converts it into a
+; KWC_DECIMAL token followed by a data block containing the digits and decimal
+; point. Handles numbers starting with a digit or decimal point (e.g., "42",
+; "3.14", ".5") and ensures only one decimal point is allowed per number.
+;
+; \in X         Current position in `lineBuffer` (pointing at first digit or '.')
+; \out X        Updated position after the decimal constant
+; \sideeffects  - Writes `KWC_DECIMAL` token to token buffer
+;               - Writes decimal digit data block to token buffer
+;               - Uses `zTemp0` for decimal point counting
+;               - Advances through `lineBuffer` consuming digits [0-9] and one '.'
+; \see          TOKWriteByte, TOKWriteBlockXY, lineBuffer, tokenBuffer
+;;
+TOKTokenDecimal:
+		pha									; save A on the stack
+		lda 	#KWC_DECIMAL 				; decimal constant token
+		jsr 	TOKWriteByte
+
+		stz 	zTemp0 						; the number of decimal periods so far
+		pla									; restore A
+		cmp 	#"."						; check if the first character is a period
+		bne 	_first_char
+		inc 	zTemp0						; if so, increment the period count
+		lda     #"0"						; write a zero to start the number
+		jsr 	TOKWriteByte
+		lda     #"."						; then write the period
+
+	_first_char:
+		jsr 	TOKWriteByte				; save the first digit or period
+		phx 								; push start of constant on the stack
+
+	_find_loop:
+		inx 	 							; this is stored in a block, so find
+		lda 	lineBuffer,x 				; out how long the constant is
+		cmp 	#"0"
+		bcc 	_found
+		cmp 	#"9"+1
+		bcc 	_find_loop
+		cmp 	#"."
+		bne 	_found
+
+		; Found a decimal point - check if we've already seen one
+		lda 	zTemp1
+		bne 	_found						; already seen a decimal point, stop here
+		inc 	zTemp1						; mark that we've seen a decimal point
+		bra 	_find_loop
+
+	_found:
+		ply 								; restore start
+		jsr 	TOKWriteBlockXY 			; output the block
+		rts
+
+;;
+; Copy a block of data from the line buffer to the token buffer.
+;
+; Writes a block of data from the line buffer to the token buffer, including
+; a length byte prefix and a null terminator. Used for string literals, hex
+; constants, and other variable-length data that needs to be stored in the
+; tokenized output.
+;
+; \in Y         Start position in `lineBuffer` (inclusive)
+; \in X         End position in `lineBuffer` (exclusive)
+; \sideeffects  - Writes length byte followed by data block to token buffer
+;               - Writes null terminator after the data
+;               - Modifies registers `A`, `X`, and `Y`
+;               - Modifies `zTemp0` for calculations
+; \see          TOKWriteByte, lineBuffer, tokenBuffer
+;;
 TOKWriteBlockXY:
 		stx 	zTemp0 						; save end character
 		tya 								; use 2's complement to work out the byte size
@@ -346,60 +552,17 @@ TOKWriteBlockXY:
 		adc 	zTemp0
 		inc 	a 							; one extra for NULL
 		jsr 	TOKWriteByte
-_TOBlockLoop:
+	_loop:
 		cpy 	zTemp0 						; exit if reached the end
-		beq 	_TOBlockExit
-		lda 	lineBuffer,y 				; write byte out.
-		jsr 	TOKWriteByte				
+		beq 	_exit
+		lda 	lineBuffer,y 				; write byte out
+		jsr 	TOKWriteByte
 		iny
-		bra 	_TOBlockLoop
-_TOBlockExit:
-		lda 	#0 							; add NULL.
+		bra 	_loop
+	_exit:
+		lda 	#0 							; add NULL
 		jsr 	TOKWriteByte
 		rts
 
-; ************************************************************************************************
-;
-;									Tokenise a hex constant
-;
-; ************************************************************************************************
-
-TOKHexConstant:
-		lda 	#KWC_HEXCONST 				; hex constant token.
-		jsr 	TOKWriteByte
-		inx									; start of quoted string.
-		phx 								; push start of constant on top
-		dex
-_THFindLoop:							
-		inx 	 							; this is stored in a block, so find out how long
-		lda 	lineBuffer,x 				; the hex constant is.
-		cmp 	#"0"
-		bcc 	_THFoundEnd
-		cmp 	#"9"+1
-		bcc 	_THFindLoop
-		cmp 	#"A"
-		bcc 	_THFoundEnd
-		cmp 	#"F"+1
-		bcc 	_THFindLoop
-_THFoundEnd:
-		ply 								; restore start
-		jsr 	TOKWriteBlockXY 			; output the block
-		rts
 
 		.send code
-
-; ************************************************************************************************
-;
-;									Changes and Updates
-;
-; ************************************************************************************************
-;
-;		Date			Notes
-;		==== 			=====
-; 		17/12/22 		Added TOKCheckComment which checks for non-quoted comments. Inserted at
-;						2 positions are checks - end of tokenising and end of punctuation processing.
-; 		30/12/22 		dex before call to tokenise just before _TOKCCExit - rem abcd was tokenising
-;						as rem "bcd" e.g. missing the first character.
-; 		04/03/23 		Changed to allow modification to colourising of listings.
-;
-; ************************************************************************************************

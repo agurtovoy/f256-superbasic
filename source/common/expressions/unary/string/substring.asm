@@ -18,14 +18,15 @@
 ;
 ; ************************************************************************************************
 
-Unary_Left: 	;; [left$(]
+Unary_Left: 	;; [left$]
+		jsr 	CheckLeftBracket
 		plx
 		clc 								; only one parameter
 		jsr 	SubstringInitial 			; set up.
 		lda 	NSMantissa0+1,x 			; Param #1 is the length
-		sta 	NSMantissa0+2,x 				
+		sta 	NSMantissa0+2,x
 		stz 	NSMantissa0+1,x 			; Start is zero.
-		bra 	SubstringMain 				
+		bra 	SubstringMain
 
 ; ************************************************************************************************
 ;
@@ -33,7 +34,8 @@ Unary_Left: 	;; [left$(]
 ;
 ; ************************************************************************************************
 
-Unary_Right: 	;; [right$(]
+Unary_Right: 	;; [right$]
+		jsr 	CheckLeftBracket
 		plx
 		clc 								; only one parameter
 		jsr 	SubstringInitial 			; set up.
@@ -42,10 +44,10 @@ Unary_Right: 	;; [right$(]
 
 		lda 	NSExponent,x 				; total length
 		sbc 	NSMantissa0+1,x 			; length - required.
-		bcs 	_URNotUnderflow		
+		bcs 	_URNotUnderflow
 		lda 	#0 							; start from the beginning, as something like right$("AB",3)
 _URNotUnderflow:
-		sta 	NSMantissa0+1,x 			; this is the start position		
+		sta 	NSMantissa0+1,x 			; this is the start position
 		bra 	SubstringMain
 
 ; ************************************************************************************************
@@ -54,7 +56,8 @@ _URNotUnderflow:
 ;
 ; ************************************************************************************************
 
-Unary_Mid: 	;; [mid$(]
+Unary_Mid: 	;; [mid$]
+		jsr 	CheckLeftBracket
 		plx
 		sec 								; two parameters
 		jsr 	SubstringInitial 			; set up.
@@ -63,7 +66,7 @@ Unary_Mid: 	;; [mid$(]
 		beq 	_UMError
 		dec 	NSMantissa0+1,x				; reduce initial offset by 1 as MID$(a$,1..) is actually the first character
 		bra 	SubstringMain
-_UMError:		
+_UMError:
 		jmp 	ArgumentError
 
 ; ************************************************************************************************
@@ -72,9 +75,9 @@ _UMError:
 ;
 ; ************************************************************************************************
 
-SubstringMain:		
-		lda 	NSMantissa0+1,x 			; is the initial offset >= the length	
-		cmp 	NSExponent,x 	
+SubstringMain:
+		lda 	NSMantissa0+1,x 			; is the initial offset >= the length
+		cmp 	NSExponent,x
 		bcs 	_SSMNull 					; if so, return an empty string.
 		;
 		lda 	NSMantissa0+2,x 			; if copy count is zero
@@ -82,12 +85,12 @@ SubstringMain:
 		;
 		clc 								; add the offset +1 to the address and
 		lda	 	NSMantissa0,x 				; put in zTemp, this is the start of the substring to copy.
-		adc 	NSMantissa0+1,x 
+		adc 	NSMantissa0+1,x
 		sta 	zTemp0
 		lda	 	NSMantissa1,x
 		adc 	#0
 		sta 	zTemp0+1
-_SSMNoCarry:		
+_SSMNoCarry:
 		lda 	NSMantissa0+2,x 			; characters required.
 		jsr 	StringTempAllocate 			; allocate that many characters
 
@@ -97,17 +100,17 @@ _SSMCopy:
 		lda 	(zTemp0),y 					; get next character
 		beq 	_SSMEString 				; no more to copy
 		jsr 	StringTempWrite 			; and write it out.
-		iny 
+		iny
 		dec 	NSMantissa0+2,x
-		bne 	_SSMCopy 
-_SSMEString:		
+		bne 	_SSMCopy
+_SSMEString:
 		ply
 _SSMExit:
-		rts				
+		rts
 
 _SSMNull:
 		lda 	#0
-		jsr 	StringTempAllocate		
+		jsr 	StringTempAllocate
 		rts
 
 ; ************************************************************************************************
@@ -157,7 +160,7 @@ _SSIExit:
 		jsr 	CheckRightBracket 			; check closing bracket
 		rts 								; exit
 		.send 	code
-		
+
 ; ************************************************************************************************
 ;
 ;									Changes and Updates

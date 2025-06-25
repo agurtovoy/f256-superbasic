@@ -25,8 +25,8 @@ _PSLoop:
 		.cget0 								; exit if at end
 		beq 	_PSExit
 		;
-		ldy 	#3 							; is it PROC at start of line ?
-		.cget 
+		ldy 	#global.FIRST_TOKEN_OFFSET	; is it PROC at start of line ?
+		.cget
 		cmp 	#KWD_PROC
 		bne 	_PSNext
 		;
@@ -38,7 +38,7 @@ _PSLoop:
 		cmp 	#$40
 		bne 	_PSSyntax
 		.cget 								; get it back and convert to real address
-		clc 								
+		clc
 		adc 	#((VariableSpace >> 8) - $40) & $FF
 		sta 	zTemp0+1
 		iny 								; LSB
@@ -63,10 +63,10 @@ _PSCopy:
 		sta 	(zTemp0),y
 		inx
 		cpx 	#4
-		bne 	_PSCopy		
+		bne 	_PSCopy
 _PSNext:
 		.cnextline  						; next line and try again
-		bra 	_PSLoop				
+		bra 	_PSLoop
 _PSExit:
 		jsr 	SwapDataCodePtrs 			; swap code and data
 		rts

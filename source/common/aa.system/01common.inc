@@ -20,7 +20,7 @@
 ;
 ;		Variables that have to be in zero page because it's used in (xx),y
 ;
-ZeroPageMandatory = $30 
+ZeroPageMandatory = $30
 ;
 ; 		Variables that would be nice to be in zero page, but it's not required
 ;
@@ -30,10 +30,22 @@ ZeroPagePreference = $50
 ;       at $200 for maximum compatibility
 ;
 ArgumentStorage = $200
-;
-;		Control Variables - low usage control variables.	
-;
-ControlStorage = $400
+
+;;
+; Options storage - low-usage option variables.
+;;
+OptionsStorage = $400
+OptionsColors .struct
+		FgComment	.byte \1
+		BgComment	.byte \2
+		LineNumber	.byte \3
+		Token		.byte \4
+		Constant	.byte \5
+		Identifier	.byte \6
+		Punctuation	.byte \7
+		Data		.byte \8
+	.endstruct
+
 ;
 ;		Variables that can go anywhere
 ;
@@ -45,7 +57,7 @@ BasicStart = $2000
 BasicEnd = $8000
 ;
 ;		Build address of ROM
-;		
+;
 CodeStart = $8000
 ;
 ;		Start of variable/string space. This is a fixed location in memory.
@@ -66,8 +78,16 @@ BasicStackSize = 512
 BasicStackBase = $1000-BasicStackSize
 ;
 ;		Max Input Line Length
-;	
+;
 MaxLineSize = 80
+
+global	.namespace
+	;
+	; Offset of the first token in a line. See `tokenize.asm` for details.
+	;
+	FIRST_TOKEN_OFFSET = 3
+.endnamespace
+
 
 ; ************************************************************************************************
 ;
@@ -84,7 +104,7 @@ MaxLineSize = 80
 		* = ArgumentStorage 				; not required to be in zero page, but preferable
 		.dsection arguments
 
-		* = MemoryStorage 					; doesn't matter if zero page or not 
+		* = MemoryStorage 					; doesn't matter if zero page or not
 		.dsection storage
 
 		* = CodeStart

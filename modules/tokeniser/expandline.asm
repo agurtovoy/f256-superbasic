@@ -1,117 +1,143 @@
-; ************************************************************************************************
-; ************************************************************************************************
+;;
+; Expand tokenized line back to human-readable source code.
 ;
-;		Name:		expandline.asm
-;		Purpose:	Expand line at code-Ptr to tokenBuffer
-;		Created:	4th October 2022
-;		Reviewed:	26th November 2022
-;		Author:		Paul Robson (paul@robsons.org.uk)
-;
-; ************************************************************************************************
-; ************************************************************************************************
+; Utilities to convert tokenized program lines back to human-readable text
+; format with syntax highlighting.
+;;
 
 		.section code
 
-setcolour .macro
-		lda 	\1
-		jsr 	LCLWriteColour
+;;
+; Set current syntax highlighting color.
+;
+; \in \1            Color name from `OptionsColors` structure.
+; \sideeffects      - Modifies A register.
+;                   - Calls `LCLWriteColor` for optimized color output.
+; \see              LCLWriteColor, OptionsColors, OptionsDefaultColors
+;;
+write_color .macro
+		lda 	OptionsStorage + OptionsColors.\1
+		jsr 	LCLWriteColor
 		.endm
 
-; ************************************************************************************************
+;;
+; Initialize tokenizer/detokenizer color settings.
 ;
-;									Reset tokeniser/detokeniser
+; Resets all syntax highlighting colors to their default values.
 ;
-; ************************************************************************************************
-
+; \out OptionsStorage   Updated with default color values from
+;                       the `OptionsDefaultColors` table.
+; \sideeffects          - Modifies registers A and X.
+; \see                  OptionsDefaultColors, OptionsColors, write_color
+;;
 Export_TKInitialise:
-		ldx 	#7
-_ETKISetDefault:
-		lda 	CLIDefault,x
-		sta 	CLIFComment,x
-		dex
-		bpl 	_ETKISetDefault
+        ldx 	#(size(OptionsColors) - 1)	; load index for last color entry
+	_loop:
+		lda 	OptionsDefaultColors,x		; load default color value
+		sta 	OptionsStorage,x			; store in active options
+		dex									; move to previous entry
+		bpl 	_loop						; continue until all copied (X >= 0)
 		rts
 
-
-; ************************************************************************************************
+;;
+; Convert tokenized line to formatted text with syntax highlighting.
 ;
-;							Convert one line back to text. Indent is A
+; Converts tokens back to human-readable text with proper formatting,
+; indentation, and color coding. Used by the [list] command and error
+; reporting to display source code.
 ;
-; ************************************************************************************************
-
+; The resulting `tokenBuffer` contains:
+;
+;  - Color-highlighted line number with padding
+;  - Block indentation based on structure level
+;  - Syntax-highlighted tokens with embedded color codes
+;  - Formatted strings/constants with appropriate delimiters
+;  - Zero-byte terminator
+;
+; \in A                 Indent adjustment (-128 to +127) for structured formatting.
+; \in codePtr           Points to tokenized line to convert.
+; \out tokenBuffer      Contains formatted ASCIIZ text with embedded color codes.
+; \out tbOffset         Set to length of output text.
+; \out listIndent       Updated based on indent adjustment parameter.
+; \sideeffects          - Modifies registers A, X, Y and various zero page locations.
+;                       - Modifies `tokenBuffer`, `tbOffset`, and `currentListColour`.
+;                       - May update `listIndent` for structured code formatting.
+; \see                  LCLWrite, LCLWriteColor, write_color macro
+;;
 Export_TKListConvertLine:
 		pha 								; save indent on the stack
-		stz 	tbOffset
-		stz 	tokenBuffer
-		stz 	currentListColour
-		.setcolour CLILineNumber
+		stz 	tbOffset					; reset token buffer position
+		stz 	tokenBuffer					; write empty string to the token buffer
+		stz 	currentListColour			; reset current color
+		.write_color LineNumber				; set color for line numbers
 		;
-		;		Do the line number
+		;		Output the line number
 		;
 		ldy 	#2 							; convert line number to string
-		.cget		
+		.cget
 		tax
 		dey
 		.cget
 		jsr 	LCLWriteNumberXA
-				;
+		;
 		;		Pad out for indentation.
 		;
 		pla 								; adjustment to indent
 		pha 								; save on stack
-		bpl 	_LCNoAdjust 				; don't adjust indent if +ve, do after.
+		bpl 	_no_adjust 					; don't adjust indent if +ve, do after.
 		clc 								; add to list indent and make 0 if goes -ve.
 		adc 	listIndent
-		sta 	listIndent 
-		bpl 	_LCNoAdjust
-		stz 	listIndent 
-_LCNoAdjust:
+		sta 	listIndent
+		bpl 	_no_adjust
+		stz 	listIndent
+
+	_no_adjust:
 		clc		 							; work out actual indent.
 		lda 	listIndent
 		asl 	a
 		adc 	#7
 		sta 	zTemp0
 
-_LCPadOut:
+	_pad_out:
 		lda 	#' '						; pad out to 6+indent characters
 		jsr 	LCLWrite
 		lda 	tbOffset
 		cmp 	zTemp0
-		bne 	_LCPadOut
-		ldy 	#3 							; start position.
+		bne 	_pad_out
+		ldy 	#global.FIRST_TOKEN_OFFSET	; set Y to first token offset
 		;	-------------------------------------------------------------------
 		;
 		;							Main List Loop
 		;
 		;	-------------------------------------------------------------------
 
-_LCMainLoop:
-		.setcolour CLIPunctuation 			; default listing colour
-		.cget 								; get next character
+	_main_loop:
+		.write_color Punctuation 			; default listing color
+		.cget 								; get next token
 		cmp 	#KWC_EOL 					; end of line ?
-		beq 	_LCExit
+		beq 	_exit
 		;
 		cmp 	#16 						; 0-5 are the double punctuations
-		bcc 	_LCDoubles
+		bcc 	_doubles
 		cmp 	#32 						; 16-31 are shifted punctuation from 64-91
-		bcc 	_LCShiftPunc
+		bcc 	_shift_punct
 		cmp 	#64 						; 32-64 are as stored, punc and digits
-		bcc 	_LCPunctuation
+		bcc 	_punctuation
 		cmp 	#128 						; 64-127 are variable identifiers.
-		bcc 	_LCIdentifiers 
-		cmp 	#254 						; 128-253 are tokenised words
-		bcc 	_LCTokens
-		jmp 	_LCData 					; 254-5 are data objects
+		bcc 	_identifiers
+		cmp 	#254 						; 128-253 are tokenized words
+		bcc 	_tokens
+		jmp 	_data 						; 254-5 are data objects
 		;
 		;		Exit - do +ve indent here.
 		;
-_LCExit:		
+	_exit:
 		pla 								; get old indent adjust
-		bmi 	_LCExit2
+		bmi 	_exit2
 		clc 								; add to indent if +ve
 		adc 	listIndent
 		sta 	listIndent
-_LCExit2:
+	_exit2:
 		rts
 		;	-------------------------------------------------------------------
 		;
@@ -119,7 +145,7 @@ _LCExit2:
 		;
 		;	-------------------------------------------------------------------
 
-_LCDoubles:
+	_doubles:
 		pha
 		lsr 	a 							; put bit 2 into bit 1
 		and 	#2
@@ -128,7 +154,7 @@ _LCDoubles:
 		pla 								; restore, do lower bit
 		and 	#3
 		ora 	#60
-		bra		_LCPunctuation 				; print, increment, loop
+		bra		_punctuation 				; print, increment, loop
 
 		;	-------------------------------------------------------------------
 		;
@@ -136,17 +162,17 @@ _LCDoubles:
 		;
 		;	-------------------------------------------------------------------
 
-_LCShiftPunc:
+	_shift_punct:
 		tax 								; save in X
 		and 	#7 							; lower 3 bits
-		beq 	_LCNoAdd
+		beq 	_no_add
 		ora 	#24 						; adds $18 to it.
-_LCNoAdd:		
+	_no_add:
 		cpx 	#24 						; if >= 24 add $20
-		bcc 	_LCNoAdd2
+		bcc 	_no_add2
 		ora 	#32 						; adds $20
-_LCNoAdd2:
-		ora 	#$40 						; shift into 64-127 range and fall through.				
+	_no_add2:
+		ora 	#$40 						; shift into 64-127 range and fall through.
 
 		;	-------------------------------------------------------------------
 		;
@@ -154,25 +180,31 @@ _LCNoAdd2:
 		;
 		;	-------------------------------------------------------------------
 
-_LCPunctuation:
-		cmp 	#':' 						; check if :
-		bne 	_LCPContinue
-		jsr 	LCLDeleteLastSpace 			; if so delete any preceding spaces
-_LCPContinue:		
+	_punctuation:
 		cmp 	#'.'
-		beq 	_LCPIsConstant
+		beq 	_is_const
 		cmp 	#'0'
-		bcc 	_LCPNotConstant
+		bcc 	_not_const
 		cmp 	#'9'+1
-		bcs 	_LCPNotConstant
-_LCPIsConstant:
+		bcs 	_not_const
+	_is_const:
 		pha
-		.setcolour CLIConstant
+		.write_color Constant
 		pla
-_LCPNotConstant:		
-		iny 								; consume character
-		jsr 	LCLWrite 					; write it out.
-		bra 	_LCMainLoop 				; go round again.
+
+	_not_const:
+		;
+		; add a space if `:`
+		;
+		cmp 	#':' 						;
+		bne 	_continue
+		jsr 	LCLWrite 					; write ':'
+		lda 	#' '						; follow with a space
+
+	_continue:
+		jsr 	LCLWrite 					; write the character in `A`
+		iny 								; next token
+		bra 	_main_loop 				; go round again.
 
 		;	-------------------------------------------------------------------
 		;
@@ -180,27 +212,31 @@ _LCPNotConstant:
 		;
 		;	-------------------------------------------------------------------
 
-_LCIdentifiers:
+	_identifiers:
 		clc 								; convert to physical address
-		adc 	#((VariableSpace >> 8) - $40) & $FF		
+		adc 	#((VariableSpace >> 8) - $40) & $FF
 		sta 	zTemp0+1
 		iny
 		.cget
 		sta 	zTemp0
 		iny
 		phy 								; save position
-		.setcolour CLIIdentifier 			; set list colour
+
+		jsr		LCLAddLeadingSpaceIfNeeded ; add leading space if needed
+		.write_color Identifier 			; set list color
 		ldy 	#7 							; output the identifier at +8
-_LCOutIdentifier:
+
+	_out_identifier:
 		iny
 		lda 	(zTemp0),y					; bit 7 set = end.
 		and 	#$7F
 		jsr 	LCLLowerCase
 		jsr 	LCLWrite
-		lda 	(zTemp0),y				 	; ends when bit 7 set.	
-		bpl 	_LCOutIdentifier
+		lda 	(zTemp0),y				 	; ends when bit 7 set.
+		bpl 	_out_identifier
 		ply 								; restore position
-		jmp 	_LCMainLoop
+		jsr 	LCLAddSpaceIfNeeded
+		jmp 	_main_loop
 
 		;	-------------------------------------------------------------------
 		;
@@ -208,54 +244,70 @@ _LCOutIdentifier:
 		;
 		;	-------------------------------------------------------------------
 
-_LCTokens:
+	_tokens:
 		tax 								; token in X
 		.set16 	zTemp0,KeywordSet2 			; identify keyword set
 		cpx 	#$82
-		beq 	_LCUseShift
+		beq 	_use_shift
 		.set16 	zTemp0,KeywordSet1
 		cpx 	#$81
-		beq 	_LCUseShift
+		beq 	_use_shift
 		.set16  zTemp0,KeywordSet0
-		bra 	_LCNoShift
-_LCUseShift:								; skip over token if using $81/$82 shifts
+		bra 	_no_shift
+
+	_use_shift:								; skip over token if using $81/$82 shifts
 		iny
-_LCNoShift:
-		jsr 	LCLCheckSpaceRequired 		; do we need a space ?
+
+	_no_shift:
+;		.cget 								; get the token again
+;		cmp 	#KWD_COLON 					; check if :
+;		beq 	_no_shift_no_space
+		;jsr 	LCLCheckSpaceRequired 		; do we need a space ?
+
+;	_no_shift_no_space:
 		.cget 								; get the token again
 		tax 								; into X
-_LCFindText:		
+
+	_find_text:
 		dex
-		bpl 	_LCFoundText 				; found text.
+		bpl 	_found_text 				; found text.
 		lda 	(zTemp0) 					; length of text
 		inc 	a 							; one extra for size
 		sec 								; one extra for checksum
 		adc 	zTemp0 						; go to next token
 		sta 	zTemp0
-		bcc 	_LCFindText
+		bcc 	_find_text
 		inc 	zTemp0+1
-		bra 	_LCFindText
-_LCFoundText:				
+		bra 	_find_text
+
+	_found_text:
 		phy 								; save List position
 		lda 	(zTemp0)					; count to print
 		tax
-		.setcolour CLIToken
+
+		jsr		LCLAddLeadingSpaceIfNeeded ; add leading space if needed
+
+		.write_color Token
 		ldy 	#2
-_LCCopyToken:								; copy token out.
+
+	_copy_token:								; copy token out.
 		lda 	(zTemp0),y
 		jsr 	LCLLowerCase
 		jsr 	LCLWrite
 		iny
 		dex
-		bne 	_LCCopyToken
-		cmp 	#"(" 						; if last char not ( print a space
-		beq 	_LCNoSpace
-		lda 	#' '
-		jsr 	LCLWrite
-_LCNoSpace:
+		bne 	_copy_token
+;		cmp 	#"(" 						; if last char not ( print a space
+;		beq 	_no_space
+;		lda 	#' '
+;		jsr 	LCLWrite
+
+;	_no_space:
 		ply 								; restore position.
-		iny 								; consume token
-		jmp 	_LCMainLoop 				; and go around again.			
+		iny 								; next token
+		jsr 	LCLAddSpaceIfNeeded
+
+		jmp 	_main_loop 				; and go around again.
 
 		;	-------------------------------------------------------------------
 		;
@@ -263,65 +315,110 @@ _LCNoSpace:
 		;
 		;	-------------------------------------------------------------------
 
-_LCData:
+	_data:
 		pha 								; save type $FE/$FF
 		ldx 	#'$' 						; figure out $ or "
 		cmp 	#$FE
-		beq 	_LCHaveOpener
+		beq 	_have_opener
 		ldx 	#'"'
-		.setcolour CLIData	
+		.write_color Data
 		;
 		;		Check for comment on line by itself.
 		;
 		cpy 	#4 							; must be 2nd thing on line
-		bne 	_LCHaveOpener
+		bne 	_have_opener
 		dey 								; what precedes it ?
 		.cget
 		iny
 		cmp 	#KWD_QUOTE 					; if quote
-		bne 	_LCHaveOpener
+		bne 	_have_opener
 		lda 	#9 							; tab
-		jsr 	LCLWrite 				
-		lda 	CLIBComment
-		bmi 	_LCHaveOpener
+		jsr 	LCLWrite
+		lda 	OptionsStorage + OptionsColors.BgComment
+		bmi 	_have_opener
 		ora 	#$90
 		jsr 	LCLWrite
-		.setcolour CLIFComment
-_LCHaveOpener:
+		.write_color FgComment
+
+	_have_opener:
 		txa 								; output prefix (# or ")
 		jsr 	LCLWrite
 		iny 								; get count
 		.cget
 		tax
-		iny 								; point at first character				
-_LCOutData:
+		iny 								; point at first character
+
+	_out_data:
 		.cget 								; get next
 		cmp 	#0
-		beq 	_LCNoPrint
+		beq 	_no_print
 		jsr 	LCLWrite
-_LCNoPrint:
+
+	_no_print:
 		iny
 		dex
-		bne 	_LCOutData
+		bne 	_out_data
 		pla 								; closing " required ?
 		cmp 	#$FF 						; not required for hex constant.
-		bne 	_LCNoQuote
+		bne 	_no_quote
 		lda 	#'"'
 		jsr 	LCLWrite
 		lda 	EXTTextColour
 		and 	#$0F
 		ora 	#$90
-		jsr 	LCLWrite		
-_LCNoQuote:		
-		jmp 	_LCMainLoop
+		jsr 	LCLWrite
 
-; ************************************************************************************************
-;
-;					Output write colour ($80-$8F) only if it has changed
-;
-; ************************************************************************************************
+	_no_quote:
+		jmp 	_main_loop
 
-LCLWriteColour:
+
+LCLAddLeadingSpaceIfNeeded:
+		lda 	lcLastCharacter 			; `A` = last written character
+		cmp 	#'"'
+		beq 	_space						; add space after a string literal
+		cmp 	#'0' 						;
+		bcc 	_exit						; exit if less than '0'
+		cmp 	#'9'						;
+		bcs 	_exit						; exit if greater than '9'
+	_space:
+		lda 	#' '						;
+		jsr 	LCLWrite					; write space to buffer
+	_exit:
+		rts
+
+
+LCLAddSpaceIfNeeded:
+		.cget								; get next token
+		cmp 	#$40 						;
+		bcs 	_trailing_space				; identifier or keyword, add trailing space
+		cmp 	#KWD_9 						;
+		bcs 	_out					; punctuation
+		cmp 	#KWD_0 						;
+		bcc 	_out					; punctuation
+
+	_trailing_space:
+		lda 	#' '
+		jsr 	LCLWrite
+	_out:
+		rts
+
+
+;;
+; Write color control code only if it has changed.
+;
+; Outputs a color control code ($80-$8F) to the token buffer only if it differs
+; from the current listing color. This minimizes redundant color changes in the
+; output stream. The color value is always updated in `currentListColour`
+; regardless of whether it's written.
+;
+; \in A                     Color value (0-15) to set.
+; \out currentListColour    Updated to the new color value.
+; \out tokenBuffer          May be updated with new color code if changed.
+; \out tbOffset             May be incremented if color code is written.
+; \sideeffects              - Modifies `A`.
+; \see                      LCLWrite, .write_color
+;;
+LCLWriteColor:
 		and 	#$0F
 		ora 	#$80
 		cmp 	currentListColour 			; has the colour changed
@@ -329,12 +426,22 @@ LCLWriteColour:
 		bne 	LCLWrite 					; if different, output it
 		rts
 
-; ************************************************************************************************
+;;
+; Write character to token buffer.
 ;
-;									Write to token buffer
+; Writes a single character to the `tokenBuffer` at the current offset
+; position `tbOffset` and null-terminates the buffer. Updates the last
+; character tracker `lcLastCharacter` unless the character is a color
+; control code (bit 7 set).
 ;
-; ************************************************************************************************
-
+; \in A                 Character to write to the buffer.
+; \out tokenBuffer      Updated with the new character at current offset.
+; \out tbOffset         Incremented to point to the next write position.
+; \out lcLastCharacter  Updated to the written character (unless it's a color
+;                       code).
+; \sideeffects          - Updates `tbOffset` and potentially `lcLastCharacter`
+; \see                   LCLWriteColor, LCLDeleteLastSpace
+;;
 LCLWrite:
 		phx
 		ldx 	tbOffset 					; write out make ASCIIZ
@@ -342,179 +449,167 @@ LCLWrite:
 		stz 	tokenBuffer+1,x
 		inc 	tbOffset 					; bump the position
 		ora 	#0 							; don't update last character if colour data
-		bmi 	_LCLNoColour		
+		bmi 	_no_color
 		sta 	lcLastCharacter
-_LCLNoColour:		
+	_no_color:
 		plx
 		rts
 
-; ************************************************************************************************
+;;
+; Delete last character from token buffer if it's a space.
 ;
-;								 If last space then delete it.
+; Removes the last written character from the token buffer only if it's a
+; space character (ASCII 32). This is used for cleaner formatting when
+; certain punctuation (like colons) should not be preceded by spaces.
 ;
-; ************************************************************************************************
-
+; \out tbOffset     May be decremented if last character was a space.
+; \out tokenBuffer  Last character removed if it was a space.
+; \sideeffects      - Only modifies tbOffset if last character is a space.
+; \see              LCLWrite
+;;
 LCLDeleteLastSpace:
-		pha
-		phx
-		ldx 	tbOffset
-		beq 	_LCDLSExit
-		lda 	tokenBuffer-1,x
-		cmp 	#' '
-		bne 	_LCDLSExit
-		dec 	tbOffset
-_LCDLSExit:
-		plx
-		pla
-		rts		
+		pha									; save `A` and `X` registers
+		phx									;
+		ldx 	tbOffset					; load current buffer position into `X`
+		beq 	_exit						; exit if buffer is empty
+		lda 	tokenBuffer-1,x				; load last character in the buffer
+		cmp 	#' '						; is it a space?
+		bne 	_exit						; exit if not a space
+		dec 	tbOffset					; remove the space by backing up position
+	_exit:
+		plx									; restore `A` and `X` registers
+		pla									;
+		rts
 
-; ************************************************************************************************
+;;
+; Check if a space is required before the next token.
 ;
-;							Is a space required, if so print it
+; Determines whether a space character should be inserted before the next
+; token based on the last character written to the output buffer. Adds a
+; space if the last character was alphanumeric, '$', '#', or ')' to ensure
+; proper token separation in the formatted output.
 ;
-; ************************************************************************************************
-
+; \in lcLastCharacter   The last character written to the token buffer.
+; \out tokenBuffer      May be updated with a space character.
+; \out tbOffset         May be incremented if space is added.
+; \sideeffects          - Modifies register A.
+; \see                  LCLWrite, LCLLowerCase, lcLastCharacter
+;;
 LCLCheckSpaceRequired:
-		lda 	lcLastCharacter 			; check last character
-		cmp 	#'$' 						; $ # and ) require that token space.
-		beq 	_LCCSRSpace
-		cmp 	#')'
-		beq 	_LCCSRSpace
-		cmp 	#'#'
-		beq 	_LCCSRSpace
-		jsr 	LCLLowerCase 				; saves a little effort
-		cmp 	#"0" 						; check if it was 0-9 A-Z a-z if so need space.
-		bcc 	_LCCSRExit
-		cmp 	#"9"+1
-		bcc 	_LCCSRSpace
-		cmp 	#"a"
-		bcc 	_LCCSRExit
-		cmp 	#"z"+1
-		bcs 	_LCCSRExit
-_LCCSRSpace: 								; output the space
-		lda 	#' '
-		jsr 	LCLWrite
+		lda 	lcLastCharacter 			; `A` = last written character
+		cmp 	#'$' 						;
+		beq 	_space						; string variable
+		cmp 	#')'						; function call end
+		beq 	_space
+		cmp 	#'#'						; float variable
+		beq 	_space
+		;
+		; check if alphanumeric character
+		;
+		jsr 	LCLLowerCase 				; convert to lowercase for easier checking
+		cmp 	#"0" 						;
+		bcc 	_exit						; exit if less than '0'
+		cmp 	#"9"+1						;
+		bcc 	_space						; if less or equal '9', then it's a digit
+		cmp 	#"a"						;
+		bcc 	_exit						; exit if less than 'a'
+		cmp 	#"z"+1						;
+		bcs 	_exit						; exit if greater than 'z'
+	_space: 								;
+		lda 	#' '						;
+		jsr 	LCLWrite					; write space to buffer
+	_exit:
+		rts
 
-_LCCSRExit:
-		rts		
-
-; ************************************************************************************************
+;;
+; Convert uppercase letter to lowercase
 ;
-;										Convert to L/C or U/C
+; Converts an uppercase ASCII letter (A-Z) to its lowercase equivalent (a-z).
+; Non-alphabetic characters are passed through unchanged. Used for case-
+; insensitive character comparisons and lowercase output formatting.
 ;
-; ************************************************************************************************
-
+; \in A             Character to convert (any ASCII value 0-255).
+; \out A            Lowercase version if input was A-Z, otherwise unchanged.
+; \sideeffects      - Modifies only the A register.
+;                   - Uses carry flag for comparison operations.
+; \see              LCLCheckSpaceRequired
+;;
 LCLLowerCase:
-		cmp 	#"A"
-		bcc 	_LCLLCOut
-		cmp 	#"Z"+1
-		bcs 	_LCLLCOut
-		adc 	#$20
-_LCLLCOut:
+		cmp 	#"A"						; compare with capital 'A'
+		bcc 	_exit						; exit if less than 'A'
+		cmp 	#"Z"+1						; compare with capital 'Z'+1
+		bcs 	_exit						; exit if greater than 'Z'
+		adc 	#$20						; add 32 to convert A-Z to a-z
+	_exit:
 		rts
 
-LCLUpperCase:
-		cmp 	#"a"
-		bcc 	_LCLUCOut
-		cmp 	#"z"+1
-		bcs 	_LCLUCOut
-		sbc 	#$1F
-_LCLUCOut:
-		rts
-
-; ************************************************************************************************
+;;
+; Convert 16-bit number to decimal string and write to token buffer
 ;
-;										Write out XA as string
+; Converts a 16-bit unsigned integer (0-65535) to its decimal string
+; representation and writes it to the token buffer. Leading zeros are
+; suppressed except for the units digit. Uses repeated subtraction
+; algorithm with a powers-of-10 table.
 ;
-; ************************************************************************************************
-
+; \in XA            16-bit number to convert (X=high byte, A=low byte).
+; \out tokenBuffer  Updated with decimal digits of the number.
+; \out tbOffset     Incremented by the number of digits written.
+; \sideeffects      - Modifies registers A, X, Y.
+;                   - Uses zTemp0 and zTemp0+1 as temporary storage.
+;                   - Calls LCLWrite for each digit output.
+; \see              LCLWrite, _out_digit, _pow10_table
+;;
 LCLWriteNumberXA:
-		stz 	zTemp0+1 					; index into digit table.
-_LCLWNLoop1:
-		stz 	zTemp0 						; subtraction count.
-_LCLWNLoop2:		
+		stz 	zTemp0+1 					; index into digit table
+	_loop1:
+		stz 	zTemp0 						; subtraction count
+	_loop2:
 		pha 								; save initial LSB
 		sec
-		ldy 	zTemp0+1 					; position in table.
-		sbc 	_LCLWNTable,y
+		ldy 	zTemp0+1 					; position in table
+		sbc 	_pow10_table,y
 		pha
 		txa
-		sbc 	_LCLWNTable+1,y
-		bcc 	_LCLWNUnderflow
+		sbc 	_pow10_table+1,y
+		bcc 	_underflow
 		;
-		inc 	zTemp0  					; subtracted one without borrow.
+		inc 	zTemp0 						; subtracted one without borrow
 		tax 								; update X
 		pla 								; restore A
 		ply 								; throw original
-		bra 	_LCLWNLoop2 				; try again.
-_LCLWNUnderflow:
-		ldy 	zTemp0 						; count of subtractions.
-		bne 	_LCLWNOut
-		lda 	tbOffset 					; suppress leading zeroes		
+		bra 	_loop2 						; try again.
+	_underflow:
+		ldy 	zTemp0 						; count of subtractions
+		bne 	_out
+		lda 	tbOffset 					; suppress leading zeroes
 		dec 	a
-		beq 	_LCLWNNext
-_LCLWNOut:
+		beq 	_next
+	_out:
 		tya
-		jsr 	_LCLWNOutDigit 		
-_LCLWNNext:
+		jsr 	_out_digit
+	_next:
 		ply 							 	; restore original value.
-		pla		
-		ldy 	zTemp0+1  					; bump the index
+		pla
+		ldy 	zTemp0+1					; bump the index
 		iny
 		iny
 		sty 	zTemp0+1
-		cpy 	#8 							; done all 4
-		bne 	_LCLWNLoop1
-_LCLWNOutDigit:
+		cpy 	#8							; done all 4
+		bne 	_loop1
+	_out_digit:
 		ora 	#'0'
-		jsr 	LCLWrite		
+		jsr 	LCLWrite
 		rts
 
-_LCLWNTable:
+	_pow10_table:
 		.word 	10000
 		.word 	1000
 		.word 	100
-		.word 	10		
+		.word 	10
 
-; ************************************************************************************************
-;
-;								   LIST syntax colouring
-;
-; ************************************************************************************************
-
-CLIDefault:
-		.byte	CONBrown, CONYellow, CONRed, CONOrange, CONCyan, CONYellow, CONPink, CONWhite		
+;;
+; Default color values for syntax highlighting
+;;
+OptionsDefaultColors .dstruct OptionsColors, CONBrown, CONYellow, CONRed, CONOrange, CONCyan, CONYellow, CONPink, CONWhite
 
 		.send code
-
-; ************************************************************************************************
-;
-;								  LIST syntax values (in control storage)
-;
-; ************************************************************************************************
-
-CLIFComment = ControlStorage + 0
-CLIBComment = ControlStorage + 1
-CLILineNumber = ControlStorage + 2 
-CLIToken = ControlStorage + 3
-CLIConstant = ControlStorage + 4  
-CLIIdentifier = ControlStorage + 5  
-CLIPunctuation = ControlStorage + 6 
-CLIData = ControlStorage + 7
-
-; ************************************************************************************************
-;
-;									Changes and Updates
-;
-; ************************************************************************************************
-;
-;		Date			Notes
-;		==== 			=====
-;		26/11/22 		Added LCLWriteColour to minimise colour changes, e.g. not one for each
-;						punctuation character etc.
-;		26/11/22 		Tweaked coloring of constants (test for 0-9 and . in punctuation)
-;		26/11/22 		Highlighting SOL comments
-;		27/11/22 		Added LCLWriteNumberXA to decouple module from the main body of code
-;						(was using ConvertInt16)
-;
-; ************************************************************************************************

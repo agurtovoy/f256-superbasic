@@ -40,25 +40,25 @@ Command_Read:	;; [read]
 		;
 		;		Look for Data.
 		;
-_CRKeepSearching:		
+_CRKeepSearching:
 		lda 	#KWD_DATA 					; scan for instruction
 		ldx 	#KWC_EOL
 		jsr 	ScanForward
 		cmp 	#KWD_DATA 					; found data ?
 		beq 	_CRHaveData 				; found it
 		.cnextline 							; goto next instruction
-		ldy 	#3 							; start of line.
+		ldy 	#global.FIRST_TOKEN_OFFSET	; start of line.
 		.cget0 								; check there is one.
 		bne 	_CRKeepSearching
-_CRNoData:		
+_CRNoData:
 		.error_data
 		;
 		; 		Now have codePtr (dataPtr really) pointing at DATA keyword
 		;
 _CRHaveData:
-_CRContinueData:		
+_CRContinueData:
 		;
-		ldx 	#1 			
+		ldx 	#1
 		jsr 	EvaluateValue 				; evaluate value into slot # 1
 		dex
 		jsr		AssignVariable 				; do the assignment
@@ -70,8 +70,8 @@ _CRContinueData:
 		iny 								; consume comma
 		inc 	inDataStatement 			; set in data statement currently.
 		;
-_CRSwapBack:		
-		jsr 	SwapDataCodePtrs			; swap them back.		
+_CRSwapBack:
+		jsr 	SwapDataCodePtrs			; swap them back.
 		.cget 								; followed by a comma
 		iny
 		cmp 	#KWD_COMMA
