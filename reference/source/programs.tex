@@ -1,18 +1,49 @@
-\chapter{Writing Programs in SuperBASIC}
+\chapter{Getting started}
 
 \section {Writing programs}
+
+The built-in SuperBASIC editor lets you move around freely using the cursor keys and edit anything you see on the screen --- including the SuperBASIC startup header (try it!). You can enter any characters you like, in any combination. As far as the BASIC interpreter is concerned, a line of text on the screen doesn't have to make sense, or even contain alphabetic characters, as long as you don't press \keybd{Enter} while the cursor is on that line. Pressing \keybd{Enter} tells SuperBASIC to interpret the current line, which it will dutifully do. At that point, if the line isn't a valid BASIC command, you'll likely see this error:
+
+\screenout{Syntax error}
+
+Don't worry, though: apart from overwriting whatever was on the screen in that space, this error is harmless. All it means is that SuperBASIC did not understand our input. \\
+
+Once you're done playing around and ready to enter something SuperBASIC will understand, go to a blank line, type the text below, and press \keybd{Enter}:
+
+\begin{lst}
+print "Hello!"
+\end{lst}
+
+You'll see the computer respond with \code{Hello!}. That is a much nicer greeting than \code{Syntax error}, but in reality we're just greeting ourselves. The computer told us "Hello!" because that's what we instructed it to do. If instead we type
+
+\begin{lst}
+print "Bye-bye!"
+\end{lst}
+
+we'll get \code{Bye-bye!}. This type of interaction with BASIC --- where we type a command, press \keybd{Enter}, and the interpreter immediately responds with a result of that command --- is called \emph{immediate mode}. All BASIC commands can be tried out in the immediate mode, but some, such as \kwd{print}, are better suited to it than others. Here are some fun sound commands to try out in the immediate mode:
+
+\begin{lst}
+zap : shoot
+\end{lst}
+
+This won't print anything on the screen, but if you have speakers connected to your computer, you'll hear a short burst of playful sound effects. The colon (\code{:}) character acts as a command separator, allowing us to put two different commands on the same line.
+
+
+
+
+
+
 Programs in SuperBASIC are written in the 'classic' style, using line numbers. A line number on its own deletes a line.\\
 
-LIST operates as in most other systems, except there is the option to list <procedure>() which lists the given procedure by name. (LIST also uses commas, not - as some BASICs do e.g. list 100,300)\\
+\kwd{list} operates as in most other systems, except there is the option to \code{list <procedure>()}, which lists the given procedure by name. \kwd{list} also uses commas, not dashes, as some BASICs do, e.g. \code{list 100,300}.\\
 
-It is easy to cross develop in SuperBASIC (see later), writing a program on your favourite text editor, and squirting it down the USB cable using the Python script fnxmgr , or the Foenix IDE. It is also possible to develop without line numbers and have them added as the last stage before uploading.\\
+It is easy to cross-develop in SuperBASIC (see Chapter~\ref{chap:crossdev}), writing a program on your favorite text editor, and transferring it to the Wildbits machine over USB using the FnxMgr or the Foenix IDE. It is also possible to develop without line numbers and have them added as the last stage before uploading.\\
 
-Upper and Lower case is considered to be the same, so variable myName, MYNAME and MyName are all the same variable. The only place where case is specifically differentiated is in string constants.\\
+Upper and lower case are considered to be the same, so variables \code{myName}, \code{MYNAME}, and \code{MyName} are all the same variable. The only place where case is specifically differentiated is in string constants.\\
 
-Programs can be loaded or saved to SD Card or to an IEC type drive (the 5 pin DIN serial port) using the SAVE and LOAD command.\\
+Programs can be loaded or saved to SD Card or to an IEC type drive (the 5 pin DIN serial port) using the \kwd{save} and \kwd{load} commands.\\
 
-There is also currently a VERIFY command whose purpose it is to check files have been saved correctly. While the SD Card and IEC code has been seen to be reliable in practice, the code is still relatively new ; so when saving BASIC programs in development, I recommend saving them under incremental names (e.g. prog1.bas, prog2.bas) , verifying them, and periodically backing up your SD card.\\
+The \path{documents} directory in the SuperBASIC GitHub repository has a simple syntax highlighter for the Sublime Text editor.\\
 
-This may seem slightly long winded, but is a good defensive measure as there may be bugs in the kernel routines, or the BASIC routines which handle program editing. \\
 
-The documents directory in the SuperBASIC github, which is publicly accessible, has a simple syntax highlighter for the Sublime Text editor.\\
+
