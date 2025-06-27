@@ -1,10 +1,11 @@
 \documentclass[oneside]{book}
 \usepackage{datetime2}
 \DTMsetdatestyle{ddmmyyyy}
-\usepackage{hyperref}
 \usepackage{xcolor}
-\hypersetup{colorlinks=true,linkcolor=black}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=darkblue]{hyperref}
 \usepackage{amssymb}
+\usepackage{footnote}
+\setlength{\skip\footins}{20pt}
 \usepackage{notomath}
 \usepackage[T1]{fontenc}
 \usepackage[letterpaper,inner=1.5in,outer=1.0in,top=0.75in,bottom=0.75in,twoside]{geometry}
@@ -12,14 +13,15 @@
 \usepackage{graphbox}
 \usepackage{sectsty}
 \usepackage[Bjornstrup]{fncychap}
+\usepackage[protrusion=true,expansion=true]{microtype}
 \definecolor{darkblue}{rgb}{0.1, 0.0, 0.6}
 \definecolor{silver}{rgb}{0.85, 0.85, 0.85}
 \ChNumVar{\color{darkblue}\fontsize{76}{80}\usefont{OT1}{pzc}{m}{n}\selectfont}
 \ChTitleVar{\color{darkblue}\raggedleft\Huge\sffamily\bfseries}
 \allsectionsfont{\color{darkblue}\bfseries\sffamily}
-\newcommand{\jr}{F256jr}
 \newcommand{\microsec}{$\mu$s}
 \newcommand{\example}[1]{\subsection*{Example: #1}}
+\newcommand{\code}[1]{\texttt{\hspace{0.1em}#1\hspace{0.1em}}}
 \begin{document}
 
 \title{F256  Reference Manual}
