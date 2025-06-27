@@ -1,54 +1,93 @@
 \chapter{Structured Programming}
+\label{chap:structured}
 
-SuperBASIC is designed for better and more readable programs. If you learnt BASIC on another machines, you will mostly have used GOTO, GOSUB and RETURN.\\
+SuperBASIC is built to help you write programs that are easy to read and easy to change later. If you’ve used BASIC on another computer, you might be used to steering your program with commands like \kwd{goto}, \kwd{gosub}, and \kwd{return}. These work fine in small programs, but once your code grows, they can make things messy and hard to follow.\\
 
-These are terrible.\\
-
-SuperBASIC does support these, but it is strongly advised you do not use them. However, they can be useful for running old code. SuperBASIC is not Microsoft BASIC compatible, but is close enough so that code will normally work with minor alterations.
+SuperBASIC still lets you use those commands if you want, but it also offers tools you’ll probably prefer as your programs get bigger. With loops, procedures, and multi-step conditionals, your code can flow more naturally—making it simpler to read, easier to fix, and more fun to work with.
 
 \section{Named procedures}
 
-The language supports named procedures, which are full identifiers.\\sh 
+A \emph{named procedure} is simply a block of code that has a name. Once you've defined a procedure, you can run it—also called \emph{calling} it—anywhere in your program just by using its name. This often makes your code easier to follow (assuming you choose clear, descriptive names), and saves you from writing the same steps over and over again.\\
 
-This means that instead of writing gosub 300, you can have a procedure called addscore or moveinvaders or whatever you like ; they can be meaningful and this enhances program readability. Whereas with "gosub 100" you have no idea what it involves.\\
+A procedure is defined using the \kwd{proc} keyword, followed by the procedure’s name and a pair of parentheses \code{()}. The parentheses are there as a convention so that you can pass additional information to the procedure if needed; we will return to this idea shortly. The body of the procedure contains one or more instructions to be executed, and the definition is closed with the \kwd{endproc} keyword.\\
 
-\begin{verbatim}
-	100 printmessage(“hello”,42)
-	110 end
-	120 proc printmessage(msg$,n)
-	130 	print msg$+“world  x “+str$(n)
-	140 endproc
-\end{verbatim}
+Importantly, the code inside a procedure does not run until the procedure is called.\\
 
-This is a simple piece of code showing a procedure call printmessage which prints a silly message. As you can see it has two parameters, the message (in msg\$) and a number (in n). \\
+Once defined, a procedure can be called anywhere in the program by writing its name followed by parentheses.\\
 
-These are considered "local" to the procedure, so if you have either of them "outside" the procedure the values are not affected. If we modify the above example slightly -
+For example, the following code defines a simple procedure called \code{say\_hello}, which prints a greeting to the screen, and then shows how it can be called:
 
-\begin{verbatim}
-	90  n = 12
-	100 printmessage(“hello”,42)
-	105 print n
-	110 end
-	120 proc printmessage(msg$,n)
-	130 	print msg$+“world  x “+str$(n)
-	140 endproc
-\end{verbatim}
+\begin{lst}
+100 proc say_hello()
+110   print "Hello..."
+120 endproc
+200 say_hello()  ' prints "Hello..."
+210 print "Bye-bye!"
+\end{lst}
 
-This will print the message ("Hello world x 42") and after it, will print the value of n, which will still be 12. n will only be 42 inside printmessage.\\
+Here, lines 100–120 define the procedure, while line 200 calls it. When the program reaches line 200, it jumps to the code inside the procedure (line 110, \kwd{print "Hello..."}), runs it, and then comes back to line 210 to continue with the rest of the program.\\
 
-If you have no parameters then the brackets must still be used e.g. 
+\subsection*{Procedures with parameters}
 
-\begin{verbatim}
-	100 endgame()
-	110 end
-	120 proc endgame()
-	130 	print "You lose !"
-	140 endproc
-\end{verbatim}
+Procedures become even more useful when they can accept \emph{parameters}. Think of a parameter as a placeholder for something the procedure needs to know in order to do its job.\\
+
+Let’s tweak our \code{say\_hello} procedure to greet someone by name:
+
+\begin{lst}
+100 proc say_hello(name$)
+110   print "Hello, " + name$ + "!"
+120 endproc
+200 say_hello("Alice") ' prints "Hello, Alice!"
+210 say_hello("Bob")   ' prints "Hello, Bob!"
+220 print "Bye-bye."
+\end{lst}
+
+Here, we’ve added a parameter called \code{name\$}, thus letting our procedure behave differently depending on the input we give it.\\
+
+When the procedure is called on line 200 with the argument \code{"Alice"}, the parameter \code{name\$} is assigned that value, and line 110 prints \code{Hello, Alice!}. When control returns to line 210 and the procedure is called with \code{"Bob"}, \code{name\$} is assigned \code{"Bob"}, and line 110 prints \code{Hello, Bob!}.\\ 
+
+Same code—different result, based on what you pass in.
+
+\subsection*{Multiple parameters}
+
+To define a procedure that take more than one parameter, simply separate the parameters with commas:
+
+\begin{lst}
+100 proc greet(name$, time_of_day$)
+110   print "Good "; time_of_day$; ", "; name$; "!"
+120 endproc
+200 greet("Alice", "morning")   ' prints "Good morning, Alice!"
+210 greet("Charlie", "evening") ' prints "Good evening, Charlie!"
+\end{lst}
+
+A procedure can take up to N parameters.
+
+\subsection*{Order of definition}
+
+So far, we’ve been defining our procedures at the beginning of the program—before they’re used. But as your program grows, it often becomes more convenient to define them at the end. SuperBASIC allows both approaches:
+
+\begin{lst}
+100 greet("Alice", "morning")   ' prints "Good morning, Alice!"
+110 greet("Charlie", "evening") ' prints "Good evening, Charlie!"
+200 proc greet(name$, time_of_day$)
+210   print "Good "; time_of_day$; ", "; name$; "!"
+220 endproc
+\end{lst}
+
+
+\subsection*{Summary}
+
+\begin{itemize}
+  \item A named procedure is a snippet of code that has a name.
+  \item A parameter is like a local variable that lives inside a procedure.
+  \item When you call a procedure, you give it values (called arguments), which get assigned to the parameters.
+  \item A procedure can have no parameters, one parameter, or as many as you need.
+  \item Procedures make your code more flexible—you can reuse the same procedure for lots of different inputs.
+\end{itemize}
 
 \section{While and Repeat}
 
-While and Repeat are a structured way of doing something repeatedly, until a 'test' becomes either true or false. So at a simple level you could have
+WHILE and REPEAT are a structured way of doing something repeatedly, until a 'test' becomes either true or false. So at a simple level, you could have
 
 \begin{verbatim}
 100 lives = 3
@@ -57,7 +96,7 @@ While and Repeat are a structured way of doing something repeatedly, until a 'te
 130 wend
 \end{verbatim}
 
-The indentation, which is shown when the program is listed, makes it easy to see which bit is repeated. You could do this with a repeat loop e.g.
+The indentation, which is shown when the program is listed, makes it easy to see which bit is repeated. You could do this with a repeat loop, e.g.
 
 \begin{verbatim}
 	100 lives = 3
@@ -66,11 +105,11 @@ The indentation, which is shown when the program is listed, makes it easy to see
 	130 until lives = 0
 \end{verbatim}
 
-The difference between while and repeat loops is that the repeat loop is always done once - if the initial test on while fails, the repeated part will never be done at all. 
+The difference between while and repeat loops is that the repeat loop is always done once - if the initial test on while fails, the repeated part will never be done at all.
 
 \section{For loops }
 
-For loops are another way of repeating code, and are found in most BASICs. This time, you know how many times the code is to be repeated. So if you want to print "Hello world" ten times, you do it like this.
+FOR loops are another way of repeating code, and are found in most BASICs. This time, you know how many times the code is to be repeated. So if you want to print "Hello world" ten times, you do it like this:
 
 \begin{verbatim}
 	100 for i = 1 to 10
@@ -78,7 +117,7 @@ For loops are another way of repeating code, and are found in most BASICs. This 
 	120	next
 \end{verbatim}
 
-Each time you go round the loop, i has a different value, so this code.
+Each time you go round the loop, \code{i} has a different value, so this code
 
 \begin{verbatim}
 	100 for i = 1 to 10
@@ -86,7 +125,7 @@ Each time you go round the loop, i has a different value, so this code.
 	120	next
 \end{verbatim}
 
-prints the numbers 1 to 10. It is also possible to count backwards using downto
+prints the numbers 1 to 10. It is also possible to count backwards using DOWNTO:
 
 \begin{verbatim}
 	100 for i = 10 downto 1
@@ -94,24 +133,22 @@ prints the numbers 1 to 10. It is also possible to count backwards using downto
 	120	next
 \end{verbatim}
 
-There are two variations from common BASIC. Firstly there is currently no 'STEP' ; you can only count either up by 1 , or down by 1. Secondly , some basics require the index in next (e.g. next i) and have peculiar behaviours if you change the order, which are not supported, nor should they be.
+There are two variations from common BASIC. Firstly there is currently no STEP; you can only count either up by 1 , or down by 1. Secondly, some basics require the index in NEXT (e.g. NEXT I) and have peculiar behaviours if you change the order, which are not supported, nor should they be.
 
 \section{If ... Else ... Endif}
 
-If is a conditional test, allowing code to be run if some test is satisfied
-
-e.g.
+IF is a conditional test, allowing code to be run if some test is satisfied, e.g.:
 
 \begin{verbatim}
 	100 if count = 0 then explode
 	110 if name$ = "Paul Robson" then print "You are very clever and modest."
 \end{verbatim}
 
-(there is an instruction 'explode')\\
+(the built-in instruction \code{explode} plays a simple explosion sound effect).\\
 
-This is standard BASIC - if the test 'passes' the code following the then is executed. 
+This is standard BASIC: if the test 'passes', the code following the THEN is executed.\\
 
-However, there is an alternate, which is more in tune with modern programming, which is if ... else ... endif
+However, there is an alternate, which is more in tune with modern programming, which is IF ... ELSE ... ENDIF:
 
 \begin{verbatim}
 	100 for n = 1 to 10
@@ -123,11 +160,11 @@ However, there is an alternate, which is more in tune with modern programming, w
 	160 next
 \end{verbatim}
 
-will print a number is even or odd, depending on the value of n. You can have many lines of code in either the 'if part' or the 'else part'. \\
+This prints whether a number is even or odd, based on the value of \code{n}. You can include multiple lines of code in either the IF or ELSE clause.\\
 
-The else part is not mandatory.\\
+The ELSE clause is optional.\\
 
-This can all be written on one line (or pretty much any way you like) e.g. \\
+This can all be written on one line (or pretty much any way you like), e.g. \\
 
 \begin{verbatim}
 	100 for n = 1 to 10
@@ -135,15 +172,15 @@ This can all be written on one line (or pretty much any way you like) e.g. \\
 	160 next
 \end{verbatim}
 
-You cannot write, as you can in some BASIC interpreters, the following.
+You cannot write, as you can in some BASIC interpreters, the following:
 
 \begin{verbatim}
 	100 if a = 2 then print "A is two" else print "A is not two"
 \end{verbatim}
 
-Once you have a 'then' you are locked into the simple examples above ; no else or endif.\\
+Once you have a THEN, you are locked into the simple examples above; no ELSE or ENDIF.\\
 
-Generally when programming you use the 'then' short version for simple tests, and the if..else..endif for more complicated ones.\\
+Generally, when programming, you use the THEN short version for simple tests, and the IF ... ELSE ... ENDIF for more complicated ones.\\
 
 Here endeth the lesson.
 

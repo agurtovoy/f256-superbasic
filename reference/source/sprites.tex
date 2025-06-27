@@ -2,7 +2,7 @@
 
 \section{Introduction}
 
-Sprites are graphic images of differing sizes (8x8, 16x16, 24x24 or 32x32) which can appear on top of a bitmap but which don't affect that bitmap. It is a bit like a cartoon where you have a background and animated characters are placed on it.
+Sprites are graphic images of differing sizes (8x8, 16x16, 24x24 or 32x32) which can appear on top of a bitmap but which don't affect that bitmap. It is a bit like a cartoon where you have a background and animated characters are placed on it.\\
 
 The sprite command adopts the same syntax as the graphics commands in the previous section. An example is:
 
@@ -10,25 +10,25 @@ The sprite command adopts the same syntax as the graphics commands in the previo
 	sprite 3 image 5 to 20,20
 \end{verbatim}
 
-This manipulates sprite number 3 (there are 64, numbered 0..63), using image number 5, centred on screen position 20,20. The image number comes from the data set - in the example set below it would be enemy.png rotated by 90 - the sixth entry as we count from 0. You can change the location and image independently.
+This manipulates sprite number 3 (there are 64, numbered 0..63), using image number 5, centred on screen position 20,20. The image number comes from the data set - in the example set below it would be enemy.png rotated by 90 - the sixth entry as we count from 0. You can change the location and image independently.\\
 
-Most of the theoretical graphics options do not work ; you cannot colour, scale, flip etc. a sprite, the graphic is what it is. However, they are very fast compared with drawing an image on the screen using the IMAGE command.
+Most of the theoretical graphics options do not work; you cannot colour, scale, flip etc. a sprite, the graphic is what it is. However, they are very fast compared with drawing an image on the screen using the IMAGE command.
 
 \section {Creating sprites}
 
-SuperBASIC by default loads sprite data to memory location \$30000. This chapter explains how to create that data file.  This can be done by the developer, or via a python script.
+SuperBASIC by default loads sprite data to memory location \$30000. This chapter explains how to create that data file.  This can be done by the developer, or via a Python script.
 
 \section{Getting images}
 
-Sprite data is built from PNG images up to 32x32. There are some examples in the Solarfox directory in the github https://github.com/paulscottrobson/superbasic.
+Sprite data is built from PNG images up to 32x32. There are some examples in the \path{games/solarfox} directory in the SuperBASIC repository on GitHub.\footnote{\url{https://github.com/FoenixRetro/f256-superbasic/tree/main/games/solarfox}}\\
 
-They can be created individually, or ripped from sprite sheets - this is what ripgfx.py is doing in the Makefile in solarfox/graphics ; starting with the PNG file source .png it is informed where graphics are, and it tries to work out a bounding box for that graphic, and exports it to the various files.
+They can be created individually, or ripped from sprite sheets - this is what \path{ripgfx.py} is doing in the Makefile in \path{solarfox/graphics}; starting with the PNG file source .png it is informed where graphics are, and it tries to work out a bounding box for that graphic, and exports it to the various files.
 
 \section{Building a sprite data set}
-	
-Sprite data sets are built using the spritebuild.py python script (in the utilities subdirectory). Again there is an example of this in the Solarfox directory.
 
-Sprite set building is done using the spritebuild.py script which takes a file of sprite definitions. This is a simple text list of files, which can be either png files as is, or postfixed by a rotate angle (only 0,90,180 and 270) or v or h for vertical and horizontal mirroring.
+Sprite data sets are built using the \path{spritebuild.py} Python script (in the \path{utilities} subdirectory). Again there is an example of this in the \path{solarfox} directory.\\
+
+Sprite set building is done using the \path{spritebuild.py} script which takes a file of sprite definitions. This is a simple text list of files, which can be either png files as is, or postfixed by a rotate angle (only 0,90,180 and 270) or v or h for vertical and horizontal mirroring.
 
 \begin{verbatim}
 graphics/ship.png
@@ -44,21 +44,20 @@ graphics/collect2.png
 graphics/life.png h
 \end{verbatim}
 
-Sprite images are numbered in the order they are in the file from zero and should be loaded at \$30000
+Sprite images are numbered in the order they are in the file from zero and should be loaded at \$30000.\\
 
 When building the sprite it strips it as much as possible and centres it in the smallest sprite size it fits in. When using BASIC commands to position a sprite, that position is relative to the centre of the sprite.
 
 \section{Data format}
 
-At present there is a very simple data format. \
+At present there is a very simple data format.
 
 \begin{verbatim}
-+00 is the format code ($11) 
-+01 is the sprite size  (0-3, representing 8,16,24 and 32 pixel size) 
-+02 the LUT to use (normally zero) 
-+03 the first byte of sprite data 
++00 is the format code ($11)
++01 is the sprite size  (0-3, representing 8,16,24 and 32 pixel size)
++02 the LUT to use (normally zero)
++03 the first byte of sprite data
 \end{verbatim}
 
-The size, LUT and data are then repeated for every sprite in the sprite set. The file should end with a sprite size of \$80 (128) to indicate the end of the set.
-
+The size, LUT, and data are then repeated for every sprite in the sprite set. The file should end with a sprite size of \$80 (128) to indicate the end of the set.
 
