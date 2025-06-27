@@ -1,8 +1,10 @@
-\chapter{Identifiers, Variables and typing}
+\chapter{Identifiers, Variables and Typing}
+\label{chap:variables}
 
 \section{Procedure and variable naming}
 
 SuperBASIC allows full naming of both variables and procedures (a type of 'subroutine').\\
+
 A name begins with an alphabetic character or underscore, and continues with either alphanumeric character or underscores. They may also have a type character (\$ ( or \#) e.g.
 
 \begin{verbatim}
@@ -14,19 +16,19 @@ A name begins with an alphabetic character or underscore, and continues with eit
 	mean_value#
 \end{verbatim}
 
-This allows you to write readable code ; no more trying to remember what C7 is\\
+This allows you to write readable code; no more trying to remember what \code{C7} is.\\
 
-An implementation note: when the program is stored in memory, it only keeps one copy of the actual identifier 'text' name, irrespective of how many times you use it. So there apart from that once, there is no space saving from using long identifier names.
+\textbf{Implementation note}: When a program is stored in memory, each identifier name is stored only once, regardless of how many times it appears in the program. Thus, aside from that single instance, using shorter identifier names provides no additional space savings.
 
 \section{Types}
 
-Variable in SuperBASIC are one of three types - integers, floating point and strings.\\
+SuperBASIC supports three distinct variable types: integer, floating-point, and string.\\
 
 By default a variable holds an integer, which is a number between about -2 billion and +2 billion (technically it's a 32 bit integer).\\
 
 A variable name that ends with a \# holds a floating point number, or a decimal, which has a much larger range, but is less accurate, and slower.\\
 
-A variable name that ends with a \$ holds a string , which is a sequence of characters up to 253 characters in length.\\
+A variable name that ends with a \$ holds a string, which is a sequence of characters up to 253 characters in length.\\
 
 These are some examples of variables being assigned those values.
 

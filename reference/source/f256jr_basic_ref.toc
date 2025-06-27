@@ -1,51 +1,180 @@
-\contentsline {chapter}{\numberline {1}Introduction}{5}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Introduction}{5}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Storage}{5}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Memory usage}{5}{section.1.3}%
-\contentsline {section}{\numberline {1.4}Memory usage elsewhere}{6}{section.1.4}%
-\contentsline {chapter}{\numberline {2}Writing Programs in SuperBASIC}{7}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Writing programs}{7}{section.2.1}%
-\contentsline {chapter}{\numberline {3}Identifiers, Variables and typing}{9}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Procedure and variable naming}{9}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Types}{9}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Arrays}{10}{section.3.3}%
-\contentsline {chapter}{\numberline {4}Structured Programming}{11}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Named procedures}{11}{section.4.1}%
-\contentsline {section}{\numberline {4.2}While and Repeat}{12}{section.4.2}%
-\contentsline {section}{\numberline {4.3}For loops }{12}{section.4.3}%
-\contentsline {section}{\numberline {4.4}If ... Else ... Endif}{13}{section.4.4}%
-\contentsline {chapter}{\numberline {5}Graphics}{15}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Introduction}{15}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Bitmap Graphics}{15}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Graphics Modifiers and Actions}{15}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Some useful examples}{16}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Ranges}{16}{section.5.5}%
-\contentsline {chapter}{\numberline {6}Tiles and Tile Maps}{17}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Introduction}{17}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Setting up a Tile Map}{17}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Manipulating a Tile Map}{17}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Data formats}{17}{section.6.4}%
-\contentsline {chapter}{\numberline {7}Sprites}{19}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Introduction}{19}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Creating sprites}{19}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Getting images}{19}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Building a sprite data set}{19}{section.7.4}%
-\contentsline {section}{\numberline {7.5}Data format}{20}{section.7.5}%
-\contentsline {chapter}{\numberline {8}Sound}{21}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Introduction}{21}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Channels}{21}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Easy commands}{21}{section.8.3}%
-\contentsline {chapter}{\numberline {9}Inline Assembly}{23}{chapter.9}%
-\contentsline {section}{\numberline {9.1}How it works}{23}{section.9.1}%
-\contentsline {section}{\numberline {9.2}The Assemble command}{23}{section.9.2}%
-\contentsline {section}{\numberline {9.3}Two pass Assembly}{23}{section.9.3}%
-\contentsline {section}{\numberline {9.4}Limitations}{24}{section.9.4}%
-\contentsline {chapter}{\numberline {10}Cross Development of BASIC Programs}{25}{chapter.10}%
-\contentsline {section}{\numberline {10.1}Assistance}{25}{section.10.1}%
-\contentsline {section}{\numberline {10.2}Connection}{25}{section.10.2}%
-\contentsline {section}{\numberline {10.3}Software}{25}{section.10.3}%
-\contentsline {section}{\numberline {10.4}BASIC}{25}{section.10.4}%
-\contentsline {section}{\numberline {10.5}Uploading and running}{26}{section.10.5}%
-\contentsline {section}{\numberline {10.6}Memory Use}{26}{section.10.6}%
-\contentsline {section}{\numberline {10.7}Sprites}{26}{section.10.7}%
-\contentsline {chapter}{\numberline {11}Keyword Reference}{27}{chapter.11}%
+\contentsline {chapter}{Introduction}{7}{Doc-Start}%
+\contentsline {chapter}{\numberline {1}Writing Programs in SuperBASIC}{9}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Writing programs}{9}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Identifiers, Variables and Typing}{11}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Procedure and variable naming}{11}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Types}{11}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Arrays}{12}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Structured Programming}{13}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Named procedures}{13}{section.3.1}%
+\contentsline {section}{\numberline {3.2}While and Repeat}{14}{section.3.2}%
+\contentsline {section}{\numberline {3.3}For loops }{14}{section.3.3}%
+\contentsline {section}{\numberline {3.4}If ... Else ... Endif}{15}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Graphics}{17}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introduction}{17}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Bitmap Graphics}{17}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Graphics Modifiers and Actions}{17}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Some useful examples}{18}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Ranges}{18}{section.4.5}%
+\contentsline {chapter}{\numberline {5}Tiles and Tile Maps}{19}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Introduction}{19}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Setting up a Tile Map}{19}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Manipulating a Tile Map}{19}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Data formats}{19}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Sprites}{21}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Introduction}{21}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Creating sprites}{21}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Getting images}{21}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Building a sprite data set}{22}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Data format}{22}{section.6.5}%
+\contentsline {chapter}{\numberline {7}Sound}{23}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Introduction}{23}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Channels}{23}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Easy commands}{23}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Inline Assembly}{25}{chapter.8}%
+\contentsline {section}{\numberline {8.1}How it works}{25}{section.8.1}%
+\contentsline {section}{\numberline {8.2}The Assemble command}{25}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Two-pass Assembly}{25}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Limitations}{26}{section.8.4}%
+\contentsline {chapter}{\numberline {9}Cross-Development}{27}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Assistance}{27}{section.9.1}%
+\contentsline {section}{\numberline {9.2}Connection}{27}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Utility Software}{27}{section.9.3}%
+\contentsline {section}{\numberline {9.4}Cross-developing in SuperBASIC}{27}{section.9.4}%
+\contentsline {section}{\numberline {9.5}Uploading and running}{28}{section.9.5}%
+\contentsline {section}{\numberline {9.6}Memory Use}{28}{section.9.6}%
+\contentsline {section}{\numberline {9.7}Sprites}{28}{section.9.7}%
+\contentsline {chapter}{\numberline {10}Keyword, Operator and Symbol Reference}{29}{chapter.10}%
+\contentsline {section}{! (exclamation mark)}{29}{section*.8}%
+\contentsline {section}{@ (at sign)}{29}{section*.9}%
+\contentsline {section}{\# (number sign)}{30}{section*.10}%
+\contentsline {section}{\$ (dollar sign)}{30}{section*.11}%
+\contentsline {section}{\% (percent sign)}{30}{section*.12}%
+\contentsline {section}{\textasciicircum {} (caret symbol)}{30}{section*.13}%
+\contentsline {section}{\& (ampersand)}{31}{section*.14}%
+\contentsline {section}{| (vertical bar)}{31}{section*.15}%
+\contentsline {section}{* (asterisk)}{31}{section*.16}%
+\contentsline {section}{\slash {} (forward slash)}{31}{section*.17}%
+\contentsline {section}{\textbackslash {} (backward slash)}{31}{section*.18}%
+\contentsline {section}{- (minus sign)}{32}{section*.19}%
+\contentsline {section}{+ (plus sign)}{32}{section*.20}%
+\contentsline {section}{? (question mark)}{32}{section*.21}%
+\contentsline {section}{: (colon)}{32}{section*.22}%
+\contentsline {section}{. (period)}{32}{section*.23}%
+\contentsline {section}{' (apostrophe)}{33}{section*.24}%
+\contentsline {section}{" (quote)}{33}{section*.25}%
+\contentsline {section}{<\hspace *{0.8em}(less than)}{33}{section*.26}%
+\contentsline {section}{<= (less equal)}{33}{section*.27}%
+\contentsline {section}{=\hspace *{0.8em}(equal)}{33}{section*.28}%
+\contentsline {section}{<> (not equal)}{33}{section*.29}%
+\contentsline {section}{>\hspace *{0.8em}(greater than)}{33}{section*.30}%
+\contentsline {section}{>= (greater equal)}{33}{section*.31}%
+\contentsline {section}{\textless {}\textless {} (left shift)}{34}{section*.32}%
+\contentsline {section}{\textgreater {}\textgreater {} (right shift)}{34}{section*.33}%
+\contentsline {section}{abs()}{34}{section*.34}%
+\contentsline {section}{alloc()}{34}{section*.35}%
+\contentsline {section}{asc()}{34}{section*.36}%
+\contentsline {section}{assemble}{35}{section*.37}%
+\contentsline {section}{assert}{35}{section*.38}%
+\contentsline {section}{bitmap}{35}{section*.39}%
+\contentsline {section}{bload}{35}{section*.40}%
+\contentsline {section}{bsave}{36}{section*.41}%
+\contentsline {section}{call}{36}{section*.42}%
+\contentsline {section}{chr\$()}{36}{section*.43}%
+\contentsline {section}{circle}{36}{section*.44}%
+\contentsline {section}{cprint}{36}{section*.45}%
+\contentsline {section}{cursor}{36}{section*.46}%
+\contentsline {section}{dir}{37}{section*.47}%
+\contentsline {section}{dim}{37}{section*.48}%
+\contentsline {section}{drive}{37}{section*.49}%
+\contentsline {section}{end}{37}{section*.50}%
+\contentsline {section}{event()}{37}{section*.51}%
+\contentsline {section}{false}{38}{section*.52}%
+\contentsline {section}{for ... next}{38}{section*.53}%
+\contentsline {section}{frac()}{38}{section*.54}%
+\contentsline {section}{get() / get\$()}{38}{section*.55}%
+\contentsline {section}{getdate\$(n)}{38}{section*.56}%
+\contentsline {section}{gettime\$(n)}{38}{section*.57}%
+\contentsline {section}{gfx}{39}{section*.58}%
+\contentsline {section}{gosub}{39}{section*.59}%
+\contentsline {section}{goto}{39}{section*.60}%
+\contentsline {section}{hit()}{39}{section*.61}%
+\contentsline {section}{if ... then}{39}{section*.62}%
+\contentsline {section}{if ... else ... endif}{39}{section*.63}%
+\contentsline {section}{image}{40}{section*.64}%
+\contentsline {section}{inkey()}{40}{section*.65}%
+\contentsline {section}{inkey\$()}{40}{section*.66}%
+\contentsline {section}{input}{40}{section*.67}%
+\contentsline {section}{int()}{40}{section*.68}%
+\contentsline {section}{isval()}{41}{section*.69}%
+\contentsline {section}{itemcount()}{41}{section*.70}%
+\contentsline {section}{itemget\$()}{41}{section*.71}%
+\contentsline {section}{joyb()}{41}{section*.72}%
+\contentsline {section}{joyx()}{41}{section*.73}%
+\contentsline {section}{joyy()}{41}{section*.74}%
+\contentsline {section}{keydown()}{42}{section*.75}%
+\contentsline {section}{load}{42}{section*.76}%
+\contentsline {section}{left\$()}{42}{section*.77}%
+\contentsline {section}{len()}{42}{section*.78}%
+\contentsline {section}{let}{42}{section*.79}%
+\contentsline {section}{line}{43}{section*.80}%
+\contentsline {section}{list}{43}{section*.81}%
+\contentsline {section}{local}{43}{section*.82}%
+\contentsline {section}{max()}{43}{section*.83}%
+\contentsline {section}{min()}{43}{section*.84}%
+\contentsline {section}{mdelta}{43}{section*.85}%
+\contentsline {section}{memcopy}{43}{section*.86}%
+\contentsline {section}{mid\$()}{44}{section*.87}%
+\contentsline {section}{mouse}{44}{section*.88}%
+\contentsline {section}{new}{44}{section*.89}%
+\contentsline {section}{not()}{44}{section*.90}%
+\contentsline {section}{option}{45}{section*.91}%
+\contentsline {section}{palette}{45}{section*.92}%
+\contentsline {section}{peek()}{45}{section*.93}%
+\contentsline {section}{peekw()}{45}{section*.94}%
+\contentsline {section}{peekl()}{45}{section*.95}%
+\contentsline {section}{peekd()}{45}{section*.96}%
+\contentsline {section}{playing()}{45}{section*.97}%
+\contentsline {section}{plot}{45}{section*.98}%
+\contentsline {section}{poke}{46}{section*.99}%
+\contentsline {section}{pokew}{46}{section*.100}%
+\contentsline {section}{pokel}{46}{section*.101}%
+\contentsline {section}{poked}{46}{section*.102}%
+\contentsline {section}{print}{46}{section*.103}%
+\contentsline {section}{proc ... endproc}{46}{section*.104}%
+\contentsline {section}{rem}{46}{section*.105}%
+\contentsline {section}{rnd()}{46}{section*.107}%
+\contentsline {section}{random()}{46}{section*.108}%
+\contentsline {section}{read / data}{47}{section*.109}%
+\contentsline {section}{rect}{47}{section*.110}%
+\contentsline {section}{restore}{47}{section*.111}%
+\contentsline {section}{repeat ... until}{47}{section*.112}%
+\contentsline {section}{return}{47}{section*.113}%
+\contentsline {section}{right\$()}{47}{section*.114}%
+\contentsline {section}{run}{48}{section*.115}%
+\contentsline {section}{save}{48}{section*.116}%
+\contentsline {section}{setdate}{48}{section*.117}%
+\contentsline {section}{settime}{48}{section*.118}%
+\contentsline {section}{sgn()}{48}{section*.119}%
+\contentsline {section}{sound}{48}{section*.120}%
+\contentsline {section}{spc()}{49}{section*.121}%
+\contentsline {section}{sprite}{49}{section*.122}%
+\contentsline {section}{sprites}{49}{section*.123}%
+\contentsline {section}{stop}{49}{section*.124}%
+\contentsline {section}{text}{50}{section*.125}%
+\contentsline {section}{tile}{50}{section*.126}%
+\contentsline {section}{tile()}{50}{section*.127}%
+\contentsline {section}{tiles}{50}{section*.128}%
+\contentsline {section}{timer()}{50}{section*.129}%
+\contentsline {section}{try}{51}{section*.130}%
+\contentsline {section}{val()}{51}{section*.131}%
+\contentsline {section}{str\$()}{51}{section*.132}%
+\contentsline {section}{true}{51}{section*.133}%
+\contentsline {section}{verify}{51}{section*.134}%
+\contentsline {section}{while ... wend}{51}{section*.135}%
+\contentsline {section}{xload}{52}{section*.136}%
+\contentsline {section}{xgo}{52}{section*.137}%
+\contentsline {section}{zap}{52}{section*.138}%
+\contentsline {section}{ping}{52}{section*.139}%
+\contentsline {section}{shoot}{52}{section*.140}%
+\contentsline {section}{explode}{52}{section*.141}%

@@ -1,26 +1,124 @@
 \documentclass[oneside]{book}
 \usepackage{datetime2}
 \DTMsetdatestyle{ddmmyyyy}
-\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
 \usepackage{xcolor}
-\hypersetup{colorlinks=true,linkcolor=black}
+\definecolor{primary}{rgb}{0.2, 0.2, 0.6}
+\definecolor{silver}{rgb}{0.85, 0.85, 0.85}
+\usepackage{caption}
+\usepackage{changepage}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=primary]{hyperref}
 \usepackage{amssymb}
+\usepackage{footnote}
+\setlength{\skip\footins}{20pt}
 \usepackage{notomath}
 \usepackage[T1]{fontenc}
 \usepackage[letterpaper,inner=1.5in,outer=1.0in,top=0.75in,bottom=0.75in,twoside]{geometry}
+\usepackage{listings}
 \usepackage{multirow}
 \usepackage{graphbox}
 \usepackage{sectsty}
 \usepackage[Bjornstrup]{fncychap}
-\definecolor{darkblue}{rgb}{0.1, 0.0, 0.6}
-\definecolor{silver}{rgb}{0.85, 0.85, 0.85}
-\ChNumVar{\color{darkblue}\fontsize{76}{80}\usefont{OT1}{pzc}{m}{n}\selectfont}
-\ChTitleVar{\color{darkblue}\raggedleft\Huge\sffamily\bfseries}
-\allsectionsfont{\color{darkblue}\bfseries\sffamily}
-\newcommand{\jr}{F256jr}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{fancyvrb}
+\usepackage[most]{tcolorbox}
+\ChNumVar{\color{primary}\fontsize{76}{80}\usefont{OT1}{pzc}{m}{n}\selectfont}
+\ChTitleVar{\color{primary}\raggedleft\Huge\sffamily\bfseries}
+\setlength{\parindent}{0pt}
+\allsectionsfont{\color{primary}\bfseries\sffamily}
 \newcommand{\microsec}{$\mu$s}
 \newcommand{\example}[1]{\subsection*{Example: #1}}
+\newcommand{\stab}{\hspace*{0.8em}}
+\newcommand{\refentry}[1]{
+  \section*{#1}
+  \addcontentsline{toc}{section}{#1}
+}
+\newcommand{\refentrycompact}[1]{
+  \vspace{-1.4em}
+  \refentry{#1}
+}
+\newenvironment{entry}{%
+  \begin{adjustwidth}{4em}{0pt}
+}{%
+  \end{adjustwidth}
+}
+
+\tcbset{tt box/.style={
+  on line,
+  boxrule=0pt,
+  boxsep=1.8pt,
+  colback=primary!8,
+  colframe=primary!8,
+  arc=3pt,
+  left=0pt,
+  right=0pt,
+  top=1pt,
+  bottom=1pt
+}}
+
+\newtcbox{\ttbox}{tt box}
+\newcommand{\code}[1]{\hspace{0.1em}\ttbox{\ttfamily#1}\hspace{0.1em}}
+\newcommand{\kwd}[1]{\code{\color{primary}\bfseries#1}}
+
+
+\lstdefinelanguage{BASIC}{
+  morekeywords={
+    ABS, ALLOC, ASC, CHR\$, EVENT, FALSE, FRAC,
+    GET\$, GET, GETDATE\$, GETTIME\$, HIT, INKEY\$, INKEY, INT, ISVAL,
+    ITEMCOUNT, ITEMGET\$, JOYB, JOYX, JOYY, KEYDOWN, LEFT\$, LEN,
+    MAX, MID\$, MIN, NOT, PEEK, PEEKD, PEEKL, PEEKW, PLAYING,
+    RANDOM, RIGHT\$, RND, SGN, SPC, STR\$, TILE, TIMER, TRUE, VAL,
+    FOR, IF, PROC, REPEAT, WHILE, ENDIF, ENDPROC, NEXT, THEN, UNTIL,
+    WEND, AT, BY, CALL, CIRCLE, CLEAR, COLOR, COLOUR, DATA, DIM,
+    DOWNTO, ELSE, FROM, GFX, HERE, IMAGE, LET, LINE, LOCAL, MEMCOPY,
+    OFF, ON, OUTLINE, PALETTE, PLOT, POKE, POKED, POKEL, POKEW, READ,
+    RECT, REM, SOLID, SOUND, SPRITE, TEXT, TO,
+    ASSEMBLE, ASSERT, BITMAP, BLOAD, BSAVE, CLS,
+    CPRINT, CURSOR, DIR, DRIVE, END, EXPLODE, GO, GOSUB, GOTO, HIMEM,
+    INPUT, LIST, LOAD, MDELTA, MOUSE, NEW, OPTION, PING, PRINT, RESTORE,
+    RETURN, RUN, SAVE, SETDATE, SETTIME, SHOOT, SPRITES, STOP, TILE,
+    TILES, TRY, VERIFY, XGO, XLOAD, ZAP,
+    ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE,
+    BPL, BRA, BRK, BVC, BVS, CLC, CLD, CLI, CLV, CMP, CPX, CPY,
+    DEC, DEX, DEY, EOR, INC, INX, INY, JMP, JSR, LDA, LDX, LDY,
+    LSR, NOP, ORA, PHA, PHP, PHX, PHY, PLA, PLP, PLX, PLY, ROL,
+    ROR, RTI, RTS, SBC, SEC, SED, SEI, STA, STP, STX, STY, STZ,
+    TAX, TAY, TRB, TSB, TSX, TXA, TXS, TYA,
+  },
+  sensitive=false,
+  morecomment=[l]{REM},
+  morecomment=[l]{'},
+  morestring=[b]",
+}
+
+\DeclareCaptionLabelFormat{nolabel}{}
+\captionsetup[lstlisting]{
+  labelformat=nolabel,
+  justification=raggedright,
+  singlelinecheck=false,
+  margin=4em,
+  font=it,
+}
+
+\lstnewenvironment{lstexample}
+  {\lstset{
+     language=BASIC,
+     basicstyle=\fontsize{10pt}{11pt}\selectfont\ttfamily,
+     keywordstyle=\color{primary}\bfseries,
+     commentstyle=\color{darkgray}\itshape\sffamily,
+     breaklines=true,
+     breakatwhitespace=false,
+     xleftmargin=1em,
+     showstringspaces=false,
+     caption={Example},
+     captionpos=t
+   }}
+  {}
+
 \begin{document}
+\lstset{language=BASIC}
 
 \title{F256  Reference Manual}
 \author{Peter Weingartner}
@@ -28,14 +126,14 @@
     \colorbox{silver}{\makebox[\textwidth][r]{
     \shortstack{
         \vspace{3cm} \\
-        \color{darkblue}\bfseries\sffamily\Huge F256 SuperBASIC Reference Manual}} \\
+        \color{primary}\bfseries\sffamily\Huge F256 SuperBASIC Reference Manual}} \\
     }
 
     \vfill
 
-    \hfill\mbox{\color{darkblue}\bfseries\sffamily\Large Paul Robson}
+    \hfill\mbox{\color{primary}\bfseries\sffamily\Large Paul Robson}
 
-    \hfill\mbox{\color{darkblue}\bfseries\sffamily\large \today}
+    \hfill\mbox{\color{primary}\bfseries\sffamily\large \today}
 \end{titlepage}
 
 \tableofcontents

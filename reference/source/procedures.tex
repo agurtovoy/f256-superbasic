@@ -1,6 +1,7 @@
 \chapter{Structured Programming}
+\label{chap:structured}
 
-SuperBASIC is designed for better and more readable programs. If you learnt BASIC on another machines, you will mostly have used GOTO, GOSUB and RETURN.\\
+SuperBASIC is designed for better and more readable programs. If you learnt BASIC on another machine, you will mostly have used GOTO, GOSUB, and RETURN.\\
 
 These are terrible.\\
 
@@ -8,9 +9,9 @@ SuperBASIC does support these, but it is strongly advised you do not use them. H
 
 \section{Named procedures}
 
-The language supports named procedures, which are full identifiers.\\sh 
+The language supports named procedures, which are full identifiers.\\
 
-This means that instead of writing gosub 300, you can have a procedure called addscore or moveinvaders or whatever you like ; they can be meaningful and this enhances program readability. Whereas with "gosub 100" you have no idea what it involves.\\
+This means that instead of writing \code{gosub 300}, you can have a procedure called \code{addscore} or \code{moveinvaders} or whatever you like; they can be meaningful and this enhances program readability. Whereas with \code{gosub 100} you have no idea what it involves.\\
 
 \begin{verbatim}
 	100 printmessage(“hello”,42)
@@ -20,7 +21,7 @@ This means that instead of writing gosub 300, you can have a procedure called ad
 	140 endproc
 \end{verbatim}
 
-This is a simple piece of code showing a procedure call printmessage which prints a silly message. As you can see it has two parameters, the message (in msg\$) and a number (in n). \\
+This is a simple piece of code showing a procedure call \code{printmessage}, which prints a silly message. As you can see, it has two parameters, the message (in \code{msg\$}) and a number (in \code{n}). \\
 
 These are considered "local" to the procedure, so if you have either of them "outside" the procedure the values are not affected. If we modify the above example slightly -
 
@@ -34,9 +35,9 @@ These are considered "local" to the procedure, so if you have either of them "ou
 	140 endproc
 \end{verbatim}
 
-This will print the message ("Hello world x 42") and after it, will print the value of n, which will still be 12. n will only be 42 inside printmessage.\\
+This will print the message ("Hello world x 42") and after it, will print the value of n, which will still be 12. n will only be 42 inside \code{printmessage}.\\
 
-If you have no parameters then the brackets must still be used e.g. 
+If you have no parameters, then the brackets must still be used, e.g.
 
 \begin{verbatim}
 	100 endgame()
@@ -48,7 +49,7 @@ If you have no parameters then the brackets must still be used e.g.
 
 \section{While and Repeat}
 
-While and Repeat are a structured way of doing something repeatedly, until a 'test' becomes either true or false. So at a simple level you could have
+WHILE and REPEAT are a structured way of doing something repeatedly, until a 'test' becomes either true or false. So at a simple level, you could have
 
 \begin{verbatim}
 100 lives = 3
@@ -57,7 +58,7 @@ While and Repeat are a structured way of doing something repeatedly, until a 'te
 130 wend
 \end{verbatim}
 
-The indentation, which is shown when the program is listed, makes it easy to see which bit is repeated. You could do this with a repeat loop e.g.
+The indentation, which is shown when the program is listed, makes it easy to see which bit is repeated. You could do this with a repeat loop, e.g.
 
 \begin{verbatim}
 	100 lives = 3
@@ -66,11 +67,11 @@ The indentation, which is shown when the program is listed, makes it easy to see
 	130 until lives = 0
 \end{verbatim}
 
-The difference between while and repeat loops is that the repeat loop is always done once - if the initial test on while fails, the repeated part will never be done at all. 
+The difference between while and repeat loops is that the repeat loop is always done once - if the initial test on while fails, the repeated part will never be done at all.
 
 \section{For loops }
 
-For loops are another way of repeating code, and are found in most BASICs. This time, you know how many times the code is to be repeated. So if you want to print "Hello world" ten times, you do it like this.
+FOR loops are another way of repeating code, and are found in most BASICs. This time, you know how many times the code is to be repeated. So if you want to print "Hello world" ten times, you do it like this:
 
 \begin{verbatim}
 	100 for i = 1 to 10
@@ -78,7 +79,7 @@ For loops are another way of repeating code, and are found in most BASICs. This 
 	120	next
 \end{verbatim}
 
-Each time you go round the loop, i has a different value, so this code.
+Each time you go round the loop, \code{i} has a different value, so this code
 
 \begin{verbatim}
 	100 for i = 1 to 10
@@ -86,7 +87,7 @@ Each time you go round the loop, i has a different value, so this code.
 	120	next
 \end{verbatim}
 
-prints the numbers 1 to 10. It is also possible to count backwards using downto
+prints the numbers 1 to 10. It is also possible to count backwards using DOWNTO:
 
 \begin{verbatim}
 	100 for i = 10 downto 1
@@ -94,24 +95,22 @@ prints the numbers 1 to 10. It is also possible to count backwards using downto
 	120	next
 \end{verbatim}
 
-There are two variations from common BASIC. Firstly there is currently no 'STEP' ; you can only count either up by 1 , or down by 1. Secondly , some basics require the index in next (e.g. next i) and have peculiar behaviours if you change the order, which are not supported, nor should they be.
+There are two variations from common BASIC. Firstly there is currently no STEP; you can only count either up by 1 , or down by 1. Secondly, some basics require the index in NEXT (e.g. NEXT I) and have peculiar behaviours if you change the order, which are not supported, nor should they be.
 
 \section{If ... Else ... Endif}
 
-If is a conditional test, allowing code to be run if some test is satisfied
-
-e.g.
+IF is a conditional test, allowing code to be run if some test is satisfied, e.g.:
 
 \begin{verbatim}
 	100 if count = 0 then explode
 	110 if name$ = "Paul Robson" then print "You are very clever and modest."
 \end{verbatim}
 
-(there is an instruction 'explode')\\
+(the built-in instruction \code{explode} plays a simple explosion sound effect).\\
 
-This is standard BASIC - if the test 'passes' the code following the then is executed. 
+This is standard BASIC: if the test 'passes', the code following the THEN is executed.\\
 
-However, there is an alternate, which is more in tune with modern programming, which is if ... else ... endif
+However, there is an alternate, which is more in tune with modern programming, which is IF ... ELSE ... ENDIF:
 
 \begin{verbatim}
 	100 for n = 1 to 10
@@ -123,11 +122,11 @@ However, there is an alternate, which is more in tune with modern programming, w
 	160 next
 \end{verbatim}
 
-will print a number is even or odd, depending on the value of n. You can have many lines of code in either the 'if part' or the 'else part'. \\
+This prints whether a number is even or odd, based on the value of \code{n}. You can include multiple lines of code in either the IF or ELSE clause.\\
 
-The else part is not mandatory.\\
+The ELSE clause is optional.\\
 
-This can all be written on one line (or pretty much any way you like) e.g. \\
+This can all be written on one line (or pretty much any way you like), e.g. \\
 
 \begin{verbatim}
 	100 for n = 1 to 10
@@ -135,15 +134,15 @@ This can all be written on one line (or pretty much any way you like) e.g. \\
 	160 next
 \end{verbatim}
 
-You cannot write, as you can in some BASIC interpreters, the following.
+You cannot write, as you can in some BASIC interpreters, the following:
 
 \begin{verbatim}
 	100 if a = 2 then print "A is two" else print "A is not two"
 \end{verbatim}
 
-Once you have a 'then' you are locked into the simple examples above ; no else or endif.\\
+Once you have a THEN, you are locked into the simple examples above; no ELSE or ENDIF.\\
 
-Generally when programming you use the 'then' short version for simple tests, and the if..else..endif for more complicated ones.\\
+Generally, when programming, you use the THEN short version for simple tests, and the IF ... ELSE ... ENDIF for more complicated ones.\\
 
 Here endeth the lesson.
 
