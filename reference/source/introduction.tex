@@ -8,13 +8,13 @@ If you want to learn programming, I would advise you try learning using one of t
 
 F256's SuperBASIC is a modernised BASIC interpreter for the 65C02 processor. It currently occupies 4 pages (32k) of Flash mapped into 2 pages (16k) of the 65C02 memory space. At present, this is from $8000-$BFFF.\\
 
-Currently editing is still done using line numbers, however it is possible to cross-develop without line numbers. There are some examples of such at the primary github at http://github.com/paulscottrobson/SuperBASIC under the 'games' directory.\\
+Although line numbers are still used for editing, they are no longer the primary mechanism for control flow. Cross-development without line numbers is fully supported, with examples available in the \path{games} directory of the SuperBASIC GitHub repository.\footnote{\url{https://github.com/FoenixRetro/f256-superbasic}}\\
 
-However, there is no requirement to actually use them in programs. GOTO, GOSUB and RETURN are supported but this is more for backwards compatibility with older programs. It is advised to use Procedures, For/Next, While, Repeat and If/Else/Endif commands for better programming and clarity.\\
+GOTO, GOSUB, and RETURN remain available for compatibility with legacy code, but their use is discouraged. For greater clarity and maintainability, it is recommended to use procedures and structured constructs such as FOR/NEXT, WHILE, REPEAT, and IF/ELSE/ENDIF.\\
 
 \section{Storage}
 
-Programs are stored in ASCII format, so in cross development any editor can be used. LOAD, VERIFY and SAVE read and write files in this format. Internally the format is quite different.
+Programs are stored in ASCII format, so in cross-development, any editor can be used. LOAD, VERIFY, and SAVE read and write files in this format. Internally, the format is quite different.
 
 \section{Memory usage}
 
@@ -24,9 +24,9 @@ The main space from \$2000-\$7FFF contains the tokenised BASIC code. Keywords su
 
 Identifiers are replaced by a reference into the identifier table from \$1000-\$1FFF. The first part of this table is a list of identifiers along with the current value.\\
 
-Arrays and allocated memory (using alloc() follow that).\\
+Arrays and allocated memory (using ALLOC) follow that.\\
 
-Finally string memory occupies the top of this memory area and works down.\\
+Finally, string memory occupies the top of this memory area and works down.\\
 
 This should be entirely transparent to the developer.
 
@@ -40,6 +40,6 @@ If you use sprites, they are loaded to \$30000 in physical space, and the size d
 
 If you use tiles, the tile map is stored at \$24000 and the tile image data at \$26000. \\
 
-Finally, if you cross develop, the memory location from \$28000 onwards is used to store the BASIC code you have uploaded.\\
+Finally, if you cross-develop, the memory location from \$28000 onwards is used to store the BASIC code you have uploaded.\\
 
 If you do not use any of these features directly (you can set up your own bitmaps and sprites yourself, and enter programs through the keyboard, saving to the SD Card or IEC drive) then the memory is all yours.
