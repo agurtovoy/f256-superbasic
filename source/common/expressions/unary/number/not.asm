@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-Unary_Not: ;; [not(]
+Unary_Not: ;; [not]
+		jsr 	CheckLeftBracket
 		plx
 		jsr 	EvaluateInteger 			; get integer
 		jsr 	CheckRightBracket
@@ -31,7 +32,7 @@ _NotZero: 									; return -1
 		jmp 	ReturnTrue
 
 		.send 	code
-		
+
 ; ************************************************************************************************
 ;
 ;									Changes and Updates

@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-AscUnary: ;; [asc(]	
+AscUnary: ;; [asc]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	EvaluateString 				; get a string
 		lda 	(zTemp0)					; get/return first character

@@ -15,16 +15,17 @@
 ; ************************************************************************************************
 ;
 ; 				Get Date/Time use same code but have different addresses in the
-;				RTC at $D690	
+;				RTC at $D690
 ;
 ; ************************************************************************************************
 
-UnaryGetTime: ;; [gettime$(]
+UnaryGetTime: ;; [gettime$]
 		lda 	#0
 		bra 	UGDTMain
-UnaryGetDate: ;; [getdate$(]		
+UnaryGetDate: ;; [getdate$]
 		lda 	#3
 UGDTMain:
+		jsr 	CheckLeftBracket
 		plx 								; get stack position back
 
 		pha 								; save table offset
@@ -43,8 +44,8 @@ UGDTMain:
 		stz 	1
 		;
 		jsr 	UGDTDigit 					; do XX:YY:ZZ
-		jsr 	UGDTColonDigit		
-		jsr 	UGDTColonDigit		
+		jsr 	UGDTColonDigit
+		jsr 	UGDTColonDigit
 
 		pla 								; restore I/O select
 		sta 	1
@@ -53,14 +54,14 @@ UGDTMain:
 		rts
 
 UGDTColonDigit:
-		lda 	#':'		
+		lda 	#':'
 		jsr 	StringTempWrite
-UGDTDigit:		
+UGDTDigit:
 		phx 								; save X
 		lda 	RTCROffset,y 				; get offset in RTC register
 		tax
 		lda 	$D690,x 					; read RTC register
-		and 	RTCRMask,y 					; and with Mask.		
+		and 	RTCRMask,y 					; and with Mask.
 		plx
 
 		pha 								; output in BCD
@@ -71,7 +72,7 @@ UGDTDigit:
 		ora 	#48
 		jsr 	StringTempWrite
 		pla
-		and 	#15		
+		and 	#15
 		ora 	#48
 		jsr 	StringTempWrite
 
@@ -82,7 +83,7 @@ RTCROffset: 								; offset in table
 		.byte 	4,2,0,6,9,10
 RTCRMask:		 							; mask out unwanted bits. (e.g. AM/PM flag)
 		.byte 	$3F,$7F,$7F,$3F,$1F,$7F
-		
+
 		.send code
 
 ; ************************************************************************************************

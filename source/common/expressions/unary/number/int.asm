@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-IntUnary: ;; [int(]	
+IntUnary: ;; [int]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	EvaluateNumber 				; get a float or int
 		jsr 	CheckRightBracket
@@ -26,7 +27,7 @@ IntUnary: ;; [int(]
 		and 	#NSTFloat 					; check it is a float
 		beq 	_IUExit
 		jsr 	FloatIntegerPart 			; if it is get the integer part.
-_IUExit:		
+_IUExit:
 		rts
 
 		.send code

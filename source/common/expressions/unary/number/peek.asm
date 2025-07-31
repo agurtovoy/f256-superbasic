@@ -12,19 +12,20 @@
 
 		.section code
 
-PeekByteUnary: ;; [peek(]
+PeekByteUnary: ;; [peek]
 		lda 	#1
 		bra 	PeekUnary
-PeekWUnary: ;; [peekw(]
+PeekWUnary: ;; [peekw]
 		lda 	#2
 		bra 	PeekUnary
-PeekLUnary: ;; [peekl(]
+PeekLUnary: ;; [peekl]
 		lda 	#3
 		bra 	PeekUnary
-PeekDUnary: ;; [peekd(]
+PeekDUnary: ;; [peekd]
 		lda 	#4
 
 PeekUnary:
+		jsr 	CheckLeftBracket
 		plx 								; restore position.
 		pha 								; save count to copy on stack
 		jsr		Evaluate16BitInteger 		; address as constant.
@@ -46,7 +47,7 @@ _PULoop:
 		lda 	(zTemp0),y 					; get next byte, write to mantissa0,x
 		sta 	NSMantissa0,x 				; we change X not the index before it.
 
-		iny 								; next byte to write		
+		iny 								; next byte to write
 		txa 								; next byte to read - stack layout in 04data.inc
 		clc
 		adc 	#MathStackSize
@@ -57,8 +58,8 @@ _PULoop:
 		;
 		ply 								; restore stack/code pos and exit.
 		plx
-		rts		
-		
+		rts
+
 		.send code
 
 ; ************************************************************************************************

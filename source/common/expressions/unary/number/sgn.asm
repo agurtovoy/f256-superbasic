@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-SgnUnary: ;; [sgn(]	
+SgnUnary: ;; [sgn]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	EvaluateNumber 				; get a float or int
 		jsr 	CheckRightBracket

@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-LenUnary: ;; [len(]	
+LenUnary: ;; [len]
+		jsr 	CheckLeftBracket
 		plx 								; restore stack pos
 		jsr 	EvaluateString 				; get a string
 		phy

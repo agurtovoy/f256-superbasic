@@ -34,8 +34,8 @@ WarmStart:
 		lda 	#(lineBuffer+1) & $FF
 		jmp 	BootXA
 
-_WSNotSlash:			
-		jsr 	TKTokeniseLine 				; tokenise the line
+_WSNotSlash:
+		jsr 	TKTokenizeLine 				; tokenize the line
 		;
 		;		Decide whether editing or running
 		;
@@ -44,7 +44,7 @@ _WSNotSlash:
 		bne 	_WSEditCode 				; if so,edit code.
 		;
 		;		Run code in token buffer
-		;		
+		;
 		stz 	tokenOffset 				; zero the "offset", meaning it only runs one line.
 		.csetcodepointer tokenOffset		; set up the code pointer.
 		lda 	tokenBuffer 				; nothing to run
@@ -56,7 +56,7 @@ _WSNotSlash:
 		;		Editing code in token buffer.
 		;
 _WSEditCode:
-		jsr 	EditProgramCode 			; edit the program code 
+		jsr 	EditProgramCode 			; edit the program code
 		jsr 	ClearSystem 				; clear all variables etc.
 		bra 	WarmStart
 

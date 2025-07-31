@@ -18,7 +18,8 @@
 ;
 ; ************************************************************************************************
 
-KeyDown: ;; [keydown(]	
+KeyDown: ;; [keydown]
+		jsr 	CheckLeftBracket
 		jsr 	ProcessEvents 				; process outstanding events.
 		plx 								; restore stack pos
 		jsr 	Evaluate8BitInteger 		; key to check.
@@ -29,7 +30,7 @@ KeyDown: ;; [keydown(]
 		and 	KeyStatus,x 				; is it zero ?
 		beq 	_KeyUp
 		jmp 	ReturnTrue
-_KeyUp:	jmp 	ReturnFalse		
+_KeyUp:	jmp 	ReturnFalse
 
 		.send code
 
