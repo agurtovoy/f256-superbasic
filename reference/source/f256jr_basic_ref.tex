@@ -1,26 +1,225 @@
 \documentclass[oneside]{book}
 \usepackage{datetime2}
 \DTMsetdatestyle{ddmmyyyy}
-\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+\usepackage{tikz}
+\usetikzlibrary{svg.path}
+\usetikzlibrary{decorations.pathmorphing}
 \usepackage{xcolor}
-\hypersetup{colorlinks=true,linkcolor=black}
+\definecolor{primary}{rgb}{0.2, 0.2, 0.6}
+\definecolor{silver}{rgb}{0.85, 0.85, 0.85}
+\definecolor{raspberry}{rgb}{0.65, 0.2, 0.4}
+\usepackage{caption}
+\usepackage{changepage}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=primary]{hyperref}
 \usepackage{amssymb}
+\usepackage{footnote}
+\setlength{\skip\footins}{20pt}
 \usepackage{notomath}
 \usepackage[T1]{fontenc}
 \usepackage[letterpaper,inner=1.5in,outer=1.0in,top=0.75in,bottom=0.75in,twoside]{geometry}
+\usepackage{listings}
 \usepackage{multirow}
 \usepackage{graphbox}
 \usepackage{sectsty}
 \usepackage[Bjornstrup]{fncychap}
-\definecolor{darkblue}{rgb}{0.1, 0.0, 0.6}
-\definecolor{silver}{rgb}{0.85, 0.85, 0.85}
-\ChNumVar{\color{darkblue}\fontsize{76}{80}\usefont{OT1}{pzc}{m}{n}\selectfont}
-\ChTitleVar{\color{darkblue}\raggedleft\Huge\sffamily\bfseries}
-\allsectionsfont{\color{darkblue}\bfseries\sffamily}
-\newcommand{\jr}{F256jr}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{fancyvrb}
+\usepackage[most]{tcolorbox}
+\usepackage{svg}
+\usepackage{enumitem}
+\ChNumVar{\color{primary}\fontsize{76}{80}\usefont{OT1}{pzc}{m}{n}\selectfont}
+\ChTitleVar{\color{primary}\raggedleft\Huge\sffamily\bfseries}
+\setlength{\parindent}{0pt}
+\allsectionsfont{\color{primary}\bfseries\sffamily}
 \newcommand{\microsec}{$\mu$s}
 \newcommand{\example}[1]{\subsection*{Example: #1}}
+\newcommand{\stab}{\hspace*{0.8em}}
+\newcommand{\refentry}[1]{
+  \section*{#1}
+  \addcontentsline{toc}{section}{#1}
+}
+\newcommand{\refentrycompact}[1]{
+  \vspace{-1.4em}
+  \refentry{#1}
+}
+\newenvironment{entry}{%
+  \begin{adjustwidth}{4em}{0pt}
+}{%
+  \end{adjustwidth}
+}
+
+\newtcolorbox{infobox1}[2][]
+{
+  colframe = silver!25,
+  colback  = silver!10,
+  coltitle = silver!20!black,  
+  title    = #2,
+  #1,
+}
+
+\newtcolorbox{implnote}[1][]{
+  colframe= silver!19,
+  colback=silver!10,
+  boxrule=1pt,
+  enhanced,
+  left=15mm, % add space for the icon
+  overlay={
+    \node[anchor=west, xshift=4mm] at (frame.west) {
+      \includesvg[width=6mm]{icons/binary-code}
+    };
+  },
+  #1
+}
+
+\newcommand{\bookmarkicon}[2][1]{%
+  % #1 = scale factor (1.0 ≈ 32pt wide)
+  % #2 = color
+  \tikz[baseline=-1.7ex, yscale=-1, scale=#1]{
+    \path[fill=#2] svg "m21,5H7c-2.206,0-4,1.794-4,4v22.921l11-7.7,11,7.7V9c0-2.206-1.794-4-4-4Z";
+    \path[fill=#2] svg "m29,27h-2V9c0-3.309-2.691-6-6-6h-11V1h11c4.411,0,8,3.589,8,8v18Z";
+  }%
+}
+
+\newtcolorbox{summarynote}[1][]{
+  colframe=silver!10,
+  colback=silver!10,
+  colbacktitle=silver!10,
+  coltitle=primary,
+  boxrule=1pt,
+  toptitle=6pt,
+  enhanced,
+  fonttitle=\bfseries\scshape\sffamily,
+  title={\bookmarkicon[0.35]{primary}\hspace{1mm} summary},
+  #1
+}
+
+
+\newcommand{\compassicon}[2][1]{%
+  % #1 = scale factor (1.0 ≈ 32pt wide)
+  % #2 = color
+  \tikz[baseline=-1.7ex, yscale=-1, scale=#1]{%
+    \tikzset{svgstroke/.style={draw=#2, line width=1pt, line cap=rect, miter limit=10}}
+    \path[svgstroke] svg "M17.8921 30.1799V33.2276V32.4656";
+    \path[svgstroke] svg "M17.8921 4.27516V1.22754V1.98944";
+    \path[svgstroke] svg "M4.93971 17.2275H1.89209H2.65399";
+    \path[svgstroke] svg "M30.8445 17.2275H33.8921H33.1302";
+    \path[svgstroke, fill=none]
+      svg "M17.8921 33.2275C26.7287 33.2275 33.8921 26.0641 33.8921 17.2275C33.8921 8.39097 26.7287 1.22754 17.8921 1.22754C9.05552 1.22754 1.89209 8.39097 1.89209 17.2275C1.89209 26.0641 9.05552 33.2275 17.8921 33.2275Z";
+    \path[fill=#2, draw=none]
+      svg "M14.3788 14.6275L25.9017 6.40525L21.2297 19.6978L9.88247 28.05L14.3788 14.6275Z";
+  }%
+}
+
+\newtcolorbox{compatibilitynote}[1][]{
+  colframe=silver!10,
+  colback=silver!10,
+  colbacktitle=silver!10,
+  coltitle=primary,
+  boxrule=1pt,
+  toptitle=6pt,
+  enhanced,
+  fonttitle=\bfseries\scshape\sffamily,
+  title={\compassicon[0.35]{primary}\hspace{0.8mm} compatibility with other basics},
+  #1
+}
+
+\tcbset{tt box/.style={
+  on line,
+  boxrule=0pt,
+  boxsep=1.8pt,
+  colback=primary!8,
+  colframe=primary!8,
+  arc=3pt,
+  left=0pt,
+  right=0pt,
+  top=0.5pt,
+  bottom=0.5pt
+}}
+
+\newtcbox{\ttbox}{tt box}
+\newcommand{\code}[1]{\hspace{0.1em}\ttbox{\ttfamily#1}\hspace{0.1em}}
+\newcommand{\kwd}[1]{\code{\color{primary}\bfseries#1}}
+
+\lstdefinelanguage{BASIC}{
+  morekeywords={
+    ABS, ALLOC, ASC, CHR\$, EVENT, FALSE, FRAC,
+    GET\$, GET, GETDATE\$, GETTIME\$, HIT, INKEY\$, INKEY, INT, ISVAL,
+    ITEMCOUNT, ITEMGET\$, JOYB, JOYX, JOYY, KEYDOWN, LEFT\$, LEN,
+    MAX, MID\$, MIN, NOT, PEEK, PEEKD, PEEKL, PEEKW, PLAYING,
+    RANDOM, RIGHT\$, RND, SGN, SPC, STR\$, TILE, TIMER, TRUE, VAL,
+    FOR, IF, PROC, REPEAT, WHILE, ENDIF, ENDPROC, NEXT, THEN, UNTIL,
+    WEND, AT, BY, CALL, CIRCLE, CLEAR, COLOR, COLOUR, DATA, DIM,
+    DOWNTO, ELSE, FROM, GFX, HERE, IMAGE, LET, LINE, LOCAL, MEMCOPY,
+    OFF, ON, OUTLINE, PALETTE, PLOT, POKE, POKED, POKEL, POKEW, READ,
+    RECT, REM, SOLID, SOUND, SPRITE, TEXT, TO,
+    ASSEMBLE, ASSERT, BITMAP, BLOAD, BSAVE, CLS,
+    CPRINT, CURSOR, DIR, DRIVE, END, EXPLODE, GO, GOSUB, GOTO, HIMEM,
+    INPUT, LIST, LOAD, MDELTA, MOUSE, NEW, OPTION, PING, PRINT, RESTORE,
+    RETURN, RUN, SAVE, SETDATE, SETTIME, SHOOT, SPRITES, STOP, TILE,
+    TILES, TRY, VERIFY, XGO, XLOAD, ZAP,
+    ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE,
+    BPL, BRA, BRK, BVC, BVS, CLC, CLD, CLI, CLV, CMP, CPX, CPY,
+    DEC, DEX, DEY, EOR, INC, INX, INY, JMP, JSR, LDA, LDX, LDY,
+    LSR, NOP, ORA, PHA, PHP, PHX, PHY, PLA, PLP, PLX, PLY, ROL,
+    ROR, RTI, RTS, SBC, SEC, SED, SEI, STA, STP, STX, STY, STZ,
+    TAX, TAY, TRB, TSB, TSX, TXA, TXS, TYA,
+  },
+  sensitive=false,
+  morecomment=[l]{REM},
+  morecomment=[l]{'},
+  morestring=[b]",
+}
+
+\DeclareCaptionLabelFormat{nolabel}{}
+\captionsetup[lstlisting]{
+  labelformat=nolabel,
+  justification=raggedright,
+  singlelinecheck=false,
+  margin=4em,
+  font=it,
+}
+
+\lstnewenvironment{lst}
+  {\lstset{
+     language=BASIC,
+     basicstyle=\fontsize{10pt}{11pt}\selectfont\ttfamily,
+     keywordstyle=\color{primary}\bfseries,
+     commentstyle=\color{darkgray}\itshape\sffamily,
+     stringstyle=\color{raspberry}\ttfamily,
+     breaklines=true,
+     breakatwhitespace=false,
+     showstringspaces=false
+   }}
+  {}
+
+\lstnewenvironment{lstexample}
+  {\lstset{
+     language=BASIC,
+     basicstyle=\fontsize{10pt}{11pt}\selectfont\ttfamily,
+     keywordstyle=\color{primary}\bfseries,
+     commentstyle=\color{darkgray}\itshape\sffamily,
+     stringstyle=\color{raspberry}\ttfamily,
+     breaklines=true,
+     breakatwhitespace=false,
+     xleftmargin=1em,
+     showstringspaces=false,
+     caption={Example},
+     captionpos=t
+   }}
+  {}
+
+
+\lstdefinestyle{output}{
+  basicstyle=\ttfamily\small,
+  showstringspaces=false,
+  breaklines=true,
+  xleftmargin=1.5em
+}
+
 \begin{document}
+\lstset{language=BASIC}
 
 \title{F256  Reference Manual}
 \author{Peter Weingartner}
@@ -28,14 +227,14 @@
     \colorbox{silver}{\makebox[\textwidth][r]{
     \shortstack{
         \vspace{3cm} \\
-        \color{darkblue}\bfseries\sffamily\Huge F256 SuperBASIC Reference Manual}} \\
+        \color{primary}\bfseries\sffamily\Huge F256 SuperBASIC Reference Manual}} \\
     }
 
     \vfill
 
-    \hfill\mbox{\color{darkblue}\bfseries\sffamily\Large Paul Robson}
+    \hfill\mbox{\color{primary}\bfseries\sffamily\Large Paul Robson}
 
-    \hfill\mbox{\color{darkblue}\bfseries\sffamily\large \today}
+    \hfill\mbox{\color{primary}\bfseries\sffamily\large \today}
 \end{titlepage}
 
 \tableofcontents

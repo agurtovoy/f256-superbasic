@@ -1,884 +1,1549 @@
-\chapter{Keyword Reference}
+\chapter{Keyword, Operator and Symbol Reference}
 
-This describes the keywords in SuperBASIC. Some that are naturally grouped together, such as graphics, have their own section.
+This section lists all the keywords, operators and symbols used in SuperBASIC. While everything is included here for completeness, some topical keywords---such as graphics commands---are explained in more detail in their dedicated chapters.
 
-\section*{!}
-! is an indirection operator that does a similar job to DEEK and DOKE, e.g. accesses memory. It can be used either in unary fashion (!47 reads the word at location 47) or binary (a!4 reads the word at the value in address a+4). It can also appear on the left-hand side of an assignment statements when it functions as a DOKE, writing a 16 bit value in low/high order. 
-It reads or writes a 16 bit address in the 6502 memory map.
-\example{}
-\begin{verbatim}
-10 !a = 42  
-20 print !a   
-30 print a!b   
-40 a!b=12
-\end{verbatim}
+\refentry{! (exclamation mark)}
+\begin{entry}
+A 16-bit indirection operator. Reads or writes a 16-bit word at a specific address or offset, similar to \kwd{peekw} and \kwd{pokew}. It has two forms:
+\begin{itemize}
+\item Unary: \code{!47} reads the 16-bit word stored at address 47 (i.e., it reads the byte at 47 and the next byte at 48 as a single word).
+\item Binary: \code{a!4} reads the word at address \code{a + 4}, making it easy to index into structured data like tables or arrays.
+\end{itemize}
 
-\section*{' and rem}
-Comment. ‘ and rem are synonyms.  The rest of the line is ignored. The only difference between the two is when listing, ‘ comments show up in reverse to highlight them. Remarks should be in quotes for syntactic consistency.
+When used on the left-hand side of an assignment, it behaves like \kwd{pokew}, writing a 16-bit value to memory in little-endian order (low byte first, then high).
 
-\example{Simple comments}
-\begin{verbatim}
-	10 ' "This is a title comment"
-	20 REM 
-	30 REM "Another comment"
-\end{verbatim}
+\begin{lstexample}
+100 !a = 42
+110 print !a
+120 print a!b
+130 a!b=12
+\end{lstexample}
+\end{entry}
 
-\section*{abs()}
-Returns the absolute value of the parameter
+\refentry{@ (at sign)}
+\begin{entry}
+The address operator. Returns the memory address of an expression that has a fixed location in memory---typically a variable or an array element. This address can be assigned to another variable and used later to access or modify the original value.\\
 
-\example{}
-\begin{verbatim}
-	10 print abs(-4)
-\end{verbatim}
+For example, \code{@fred} gives the address where the variable \code{fred} is stored. You can store that address in another variable---often called a pointer---and later use it with one of the indirection operators (\code{?}, \code{!}{\unskip)} or with \kwd{poke} to read or change the contents of \code{fred}.
 
-\section*{alloc()}
-Allocate the given number of bytes of memory and return the address. Can be used for data structures or program memory for the assembler.
-\example{}
-\begin{verbatim}
-	10 myAssemblerCode = alloc(128)
-\end{verbatim}
+\begin{lstexample}
+100 print @fred, @a(4)
+110 fred = 17
+120 ptr = @fred
+130 ?ptr = 42
+140 print fred
+\end{lstexample}
+\end{entry}
 
-\section*{asc()}
+
+\refentry{\# (number sign)}
+\begin{entry}
+Identifier suffix designating a floating-point variable. Floating-point values are stored as a 32-bit signed mantissa and an 8-bit exponent, and can represent numbers approximately between -3.4E+38 and +3.4E+38, with around 9 decimal digits of precision. The type suffix is considered part of the variable's name; for example, \code{age} and \code{age\#} are treated as two distinct variables (integer and floating-point, respectively). See Chapter~\ref{chap:variables} for an in-depth exploration of variable types.
+
+\begin{lstexample}
+100 an_integer = 42
+110 a_float# = 3.14159
+120 print an_integer, a_float
+\end{lstexample}
+\end{entry}
+
+\refentry{\$ (dollar sign)}
+\begin{entry}
+Depending on where it's encountered, the dollar sign can play one of two roles:\\
+
+When placed before a numeric constant, it designates a hexadecimal value. For example, \code{\$10} is interpreted as a hexadecimal constant with the decimal value 16. Similarly, \code{\$2A} represents the decimal value 42:
+
+\begin{lstexample}
+100 n = $2A
+110 if n = 42 then print "Found it!"
+120 !$7ffe = 31702
+\end{lstexample}
+
+When used as a suffix in an identifier, \code{\$} designates a string variable. The suffix is considered part of the variable name, so \code{id} and \code{id\$} are treated as two distinct variables---an integer and a string, respectively. See Chapter~\ref{chap:variables} for an in-depth discussion of variable types.
+
+\begin{lstexample}
+100 an_integer_id = $FFFF
+110 a_string_id$ = "Hello world"
+120 print an_integer_id, a_string_id$
+\end{lstexample}
+\end{entry}
+
+\refentry{\% (percent sign)}
+\begin{entry}
+Remainder operator. Returns the non-negative remainder from dividing the first operand by the second. Both operands must be integers. The second operand must be non-zero.
+
+\begin{lstexample}
+100 print 42 % 5   ' prints 2
+110 print -17 % 5  ' prints 2
+\end{lstexample}
+\end{entry}
+
+\refentry{\textasciicircum{} (caret symbol)}
+\begin{entry}
+Bitwise XOR operator. Performs an exclusive OR operation on each bit of its operands. Both operands must be integers.
+
+\begin{lstexample}
+100 print a ^ $0E
+\end{lstexample}
+\end{entry}
+
+\refentry{\& (ampersand)}
+\begin{entry}
+Bitwise AND operator. Performs an AND operation on each bit of its operands. Both operands must be integers.
+
+\begin{lstexample}
+100 print count & 7
+\end{lstexample}
+\end{entry}
+
+\refentry{| (vertical bar)}
+\begin{entry}
+Bitwise OR operator. Performs an OR operation on each bit of its operands. Both operands must be integers.
+
+\begin{lstexample}
+100 print value | 4
+\end{lstexample}
+\end{entry}
+
+\refentry{* (asterisk)}
+\begin{entry}
+Integer or floating-point multiplication. If either operand is floating-point, the result is floating-point.
+
+\begin{lstexample}
+100 print 4 * 2     ' prints 8
+110 print 4.00 * 2  ' prints 8.00000
+\end{lstexample}
+\end{entry}
+
+\refentry{\slash{} (forward slash)}
+\begin{entry}
+Floating-point division. The result is always a floating-point value, even if both operands are integers. An error occurs if the divisor is zero.
+
+\begin{lstexample}
+100 print 22 / 7   ' prints 3.14285
+110 print -42 / 7  ' prints -6.00000
+\end{lstexample}
+\end{entry}
+
+\refentry{\textbackslash{} (backward slash)}
+\begin{entry}
+Integer division. Both operands must be integers. If the first number doesn’t divide evenly by the second, the result is the whole-number part of the answer (rounded toward zero). An error occurs if the divisor is zero.
+
+\begin{lstexample}
+100 print 22 \ 7   ' prints 3
+110 print -27 \ 7  ' prints -3
+120 print 42 \ 7   ' prints 6
+\end{lstexample}
+\end{entry}
+
+\refentry{- (minus sign)}
+\begin{entry}
+Integer or floating-point subtraction. If either operand is floating-point, the result is floating-point.
+
+\begin{lstexample}
+100 print 44 - 2      ' prints 42
+110 print -40 - 2.00  ' prints -42.00000
+\end{lstexample}
+\end{entry}
+
+\refentry{+ (plus sign)}
+\begin{entry}
+Integer or floating-point addition, or string concatenation. If either of the numeric operands is floating-point, the result is floating-point. Adding a number to a string produces a type error. See \kwd{str\$} for an easy way to convert a number to a string.
+
+\begin{lstexample}
+100 sum = 4 + 2                 ' sum = 6
+120 total# = 17.5 + 42.5        ' total# = 60.00000
+130 prompt$ = "Hello " + "Bob"  ' prompt$ = "Hello Bob"
+140 print sum, total#, prompt$
+\end{lstexample}
+\end{entry}
+
+\refentry{? (question mark)}
+\begin{entry}
+An 8-bit indirection operator. Reads or writes a single byte at a specific address or offset, similar to \kwd{peek} and \kwd{poke}. It works like \code{!}, but operates at the byte level instead of 16-bit words.
+
+\begin{lstexample}
+100 a = 17        ' a is a 32-bit integer
+110 ptr = @a      ' ptr holds the address of a
+120 print ?ptr    ' prints 17 (least significant byte of a)
+130 ptr?0 = 255   ' modify a's least significant byte
+140 print a       ' prints 255
+\end{lstexample}
+\end{entry}
+
+\refentry{: (colon)}
+\begin{entry}
+Statement separator. By default, only one statement is allowed per line, but you can include multiple statements by separating them with a colon. Typically used for semantic grouping of related statements.
+
+\begin{lstexample}
+100 cls: print "Hello"  ' clears the screen, then prints "Hello"
+\end{lstexample}
+\end{entry}
+
+\refentry{. (period)}
+\begin{entry}
+Assembly label operator. Assigns the label following the period to the current assembly address. The label acts as an integer variable that holds this address:
+
+\begin{lstexample}
+100 ' Fills the top screen row with the character in A
+110 assemble $6000, 0: .fill_top_row ' start an assembly block and label it
+120 ldy $0001                    ' save I/O page in Y
+130 pha: lda #2: sta $0001: pla  ' switch to I/O page 2
+140 ldx #80                      ' number of columns to fill
+150 .fill_loop                   ' define the loop label
+160 dex                          ' move (backwards) to the next column
+170 sta $c000,x                  ' write the char to column X
+180 cpx #0                       ' are we done?
+190 bne fill_loop                ' if not zero, keep going
+200 tya: sta $0001               ' restore original I/O page
+210 rts                          ' return from the routine
+220 cls                          ' clear the screen
+230 call fill_top_row, asc("#")  ' fill the top row with #
+\end{lstexample}
+
+Labels can be referenced before they are defined, but doing so requires a multi-pass assembly block---see Chapter~\ref{chap:assembly} for details.\\
+
+Since labels are variables, they must be globally unique.
+\end{entry}
+
+\refentry{' (apostrophe)}
+\begin{entry}
+Marks the beginning of a comment. Equivalent to \kwd{rem}, but more concise and does not require a colon \mbox{(\code{:})} when used after other statements. Everything following the apostrophe on the same line is ignored.
+
+\begin{lstexample}
+100 ' This is a title comment
+110 print 2*2  ' prints 4
+\end{lstexample}
+\end{entry}
+
+\refentry{" (quote)}
+\begin{entry}
+Delimits a string literal. A string must begin and end with a quote on the same line. To construct a string that spans multiple lines, use string concatenation with the newline character (\code{chr\$(13)}). To include an actual quote character inside the string, use two consecutive quotes (\code{""}).
+
+\begin{lstexample}
+100 print "Hello, world!"                     ' Hello, world!
+110 print "She said ""hi"" and walked away."  ' She said "hi" and walked away.
+120 greeting$ = "Hi, Bob!" + chr$(13) + "How are you today?"
+130 print greeting$
+\end{lstexample}
+\end{entry}
+
+\refentry{<\hspace*{0.8em}(less than)}
+\refentrycompact{<= (less equal)}
+\refentrycompact{=\hspace*{0.8em}(equal)}
+\refentrycompact{<> (not equal)}
+\refentrycompact{>\hspace*{0.8em}(greater than)}
+\refentrycompact{>= (greater equal)}
+\begin{entry}
+Numeric and string comparison. Each operator returns 0 if the condition is false and -1 if true. Comparing a number to a string produces a type error. Use \kwd{str\$} and \kwd{val} for type conversion.
+
+\begin{lstexample}
+100 input "Enter your answer:", a
+110 if a <> 42: print "Incorrect": else: print "Correct!": endif
+120 if name$ = "" then input "Enter your name:", name$
+130 print "Hello, "; name$
+\end{lstexample}
+\end{entry}
+
+\refentry{\textless{}\textless{} (left shift)}
+\refentrycompact{\textgreater{}\textgreater{} (right shift)}
+\begin{entry}
+Bit-shift operators. Shift an integer left (\code{\textless{}\textless{}}) or right (\code{\textgreater{}\textgreater{}}) by a given number of bits. Both operands must be integers, and the result is always an integer. Often used as a fast alternative to multiplying or dividing by powers of two.
+
+\begin{lstexample}
+100 n = 42
+110 print n << 2  ' prints 168 (42 * 4)
+120 print n >> 1  ' prints 21 (42 \ 2)
+\end{lstexample}
+\end{entry}
+
+\refentry{abs()}
+\begin{entry}
+Returns the absolute value of a number.
+
+\begin{lstexample}
+100 print abs(-4)        ' prints 4
+110 print abs(-3.14159)  ' prints 3.14159
+\end{lstexample}
+\end{entry}
+
+\refentry{alloc()}
+\begin{entry}
+Allocates the specified number of bytes in memory and returns the starting address of the allocated block. Useful for efficient byte-level storage, custom data structures, or program memory for assembly instructions.\\
+
+The following example uses \kwd{alloc()} to build a table of printable ASCII characters from 32 to 127:
+
+\begin{lstexample}
+100 char_start = 32: char_end = 127     ' define ASCII range
+110 buffer_size = char_end - char_start
+120 buffer = alloc(buffer_size)         ' allocate memory buffer
+130 ' fill buffer with ASCII codes from start to end
+140 for n = 0 to buffer_size - 1
+150   poke buffer + n, char_start + n
+160 next
+170 ' print characters stored in buffer
+180 for n = 0 to buffer_size - 1
+190   print chr$(peek(buffer + n));
+200 next
+\end{lstexample}
+\end{entry}
+
+\refentry{asc()}
+\begin{entry}
 Returns the ASCII value of the first character in the string, or zero if the string is empty.
-\example{}
-\begin{verbatim}
-10 print asc(“*”)
-\end{verbatim}
 
-\section*{\# and \$}
-\# and \$ are used to type variables. \# is a floating point value, \$ is a string. The default type is integer. Variables are not stored internally by name but by reference. This means they are quick to access but means they are always in existence from the start of a program if used in it. Integers are 32 bit ; Floats have a 31 bit mantissa and byte exponent.
-So variables and arrays are as follows:
-\example{}
-\begin{verbatim}
-	100 an_integer  = 42
-	110 a_float#  = 3.14159
-	120 a_string$ = “hello world”
-\end{verbatim}
+\begin{lstexample}
+100 print asc("*")
+\end{lstexample}
+\end{entry}
 
-\section*{?}
-? is an indirection operator that does a similar job to PEEK and POKE, e.g. accesses memory. It is the same as ? except it operates on a byte level.
-\example{}
-\begin{verbatim}
-	100 ?a = 42
-	110 print ?a
-	120 print a?b
-	130 a?b=12
-\end{verbatim}
+\refentry{assemble}
+\begin{entry}
+Initialises an assembler pass. Apart from the simplest bits of code, the assembler is two pass. It has two parameters. The first is the location in memory the assembled code should be stored, the second is the mode. At present there are two mode bits; bit 0 indicates the pass (0 1st pass, 1 2nd pass) and bit 1 specifies whether the code is listed as it goes. Normally these values will be 0 and 1, as the listing is a bit slow. 6502 mnemonics are typed as is. Two passes will normally be required by wrapping it in a for/next loop
 
-\section*{\$}
-Hexadecimal constant prefix. \$2A is the same as the decimal constant 42.
-\example{}
-\begin{verbatim}
-	100 print $2a
-	110 !$7ffe = 31702
-\end{verbatim}
-
-\section*{*}
-Multiply
-\example{}
-\begin{verbatim}
-	100 print 4*2
-\end{verbatim}
-
-\section*{+}
-Add or string concatenation.
-\example{}
-\begin{verbatim}
-	100 sum = 4+2
-	110 prompt$ = “hello “+”world !”
-\end{verbatim}
-
-\section*{-}
-Subtract
-\example{}
-\begin{verbatim}
-	100 print 44 – 2
-\end{verbatim}
-
-\section*{\%}
-Binary modulus operator. The second value must be non-zero.
-\example{}
-\begin{verbatim}
-	100 print 42 % 5
-\end{verbatim}
-
-\section*{.}
-Sets the following label to the current assembler address. So the example below sets the label ‘mylabel’ at the current address and you can write things like bra mylabel. Note also that this is an integer variable.
-\example{}
-\begin{verbatim}
-	100 .mylabel
-\end{verbatim}
-
-\section*{\slash~and \textbackslash}
-Signed division. An error occurs if the divisor is zero. Backslash is integer division, forwar slash returns a floating point value.
-\example{}
-\begin{verbatim}
-	100 print 22/7
-	110 print 22\7
-\end{verbatim}
-
-\section*{< <= <> = > >=}
-Comparison binary operators, which return 0 for false and -1 for true. They can be used to either compare two numbers or two strings.
-\example{}
-\begin{verbatim}
-	100 if a<42 then "a is not the answer to life the universe and everything"
-	110 if name$="" then input name$
-\end{verbatim}
-
-\section*{@}
-Returns the address of a l-expr, normally this is a variable of some sort, but it can be an array element or even an indirection. (print @!42 prints 42, the address of expression !42, not that it’s useful at all ….)
-\example{}
-\begin{verbatim}
-	100 print @fred, @a(4)
-\end{verbatim}
-
-\section*{\&}
-Binary and operator. This is a binary operator not a logical, e.g. it is the binary and not a logical and so it can return values other than true and false
-\example{}
-\begin{verbatim}
-	100 print count & 7
-\end{verbatim}
-
-\section*{<Hat Character>}
-Binary exclusive or operator. This is a binary operator not a logical, e.g. it is the binary and not a logical and so it can return values other than true and false
-\example{}
-\begin{verbatim}
-	100 print a^$0E
-\end{verbatim}
-
-\section*{|}
-Binary or operator. This is a binary operator not a logical, e.g. it is the binary and not a logical and so it can return values other than true and false
-\example{}
-\begin{verbatim}
-	100 print read.value | 4
-\end{verbatim}
-
-\section*{<< >>}
-Binary operators which shift an integer left or right a certain number of times logically. Much quicker than multiplication.
-\example{}
-\begin{verbatim}
-	100 print a << 2,32 >> 2
-\end{verbatim}
-
-\section*{assemble}
-Initialises an assembler pass. Apart from the simplest bits of code, the assembler is two pass. It has two parameters. The first is the location in memory the assembled code should be stored, the second is the mode. At present there are two mode bits ; bit 0 indicates the pass (0 1st pass, 1 2nd pass) and bit 1 specifies whether the code is listed as it goes. Normally these values will be 0 and 1, as the listing is a bit slow. 6502 mnemonics are typed as is. Two passes will normally be required by wrapping it in a for/next loop
-\example{}
-\begin{verbatim}
-	100 assemble $6000,1:lda #42:sta count:rts
-\end{verbatim}
+\begin{lstexample}
+100 assemble $6000,1: lda #42: sta count: rts
+\end{lstexample}
 Normally these are wrapped in a loop for the two passes for forward references.
-\example{}
-\begin{verbatim}
-	100 for pass = 0 to 1
-	110 assemble $6000,pass
-	120 bra forward
-	130 <some code>
-	140 .forward:rts
-	150 next
-\end{verbatim}
+
+\begin{lstexample}
+100 for pass = 0 to 1
+110 assemble $6000,pass
+120 bra forward
+130 <some code>
+140 .forward:rts
+150 next
+\end{lstexample}
 This is almost identical to the BBC Microcomputer’s inline assembler.
+\end{entry}
 
-\section*{assert}
+\refentry{assert}
+\begin{entry}
 Every good programming language should have assert. It verifies contracts and detects error conditions. If the expression following is zero, an error is produced.
-\example{}
-\begin{verbatim}
-	100 assert myage = 42
-\end{verbatim}
 
-\section*{bitmap}
-Turns the bitmap on or off, or clears it, or sets its address (the default address is \$10000). Only one bitmap is used in BASIC, but you can use others by accessing I/O. Keywords are ON OFF CLEAR <colour> AT <address> and can be chained like the example below, or not. On or Off without an at will reset the address.
-\example{}
-\begin{verbatim}
-	100 bitmap at $18000 on clear $03
-	110 bitmap at $18000 on:bitmap clear $03
-\end{verbatim}
+\begin{lstexample}
+100 assert myage = 42
+\end{lstexample}
+\end{entry}
 
-\section*{bload}
-Loads a file into memory. The 2nd parameter is the address in full memory space, *not* the 6502 CPU address. In the default set up, for the RAM area (0000-7FFF) this will however be the same.
+\refentry{bitmap}
+\begin{entry}
+Turns the bitmap layer on or off, clears it, or sets its memory address (\code{\$10000} by default). Only one bitmap layer is supported. Modifier keywords include \kwd{on}, \kwd{off}, \kwd{clear} \textit{<color>}, and \kwd{at} \textit{<address>}, and may be chained as shown in the example below. Using \kwd{on} or \kwd{off} without \kwd{at} will reset the bitmap address to its default. See Chapter~\ref{chap:graphics} for more details.
 
-So the example below loads the binary file mypic.bin into the BASIC bitmap, which is stored in MMU page 8 onwards.
-\example{}
-\begin{verbatim}
-	100 bitmap on:bitmap clear 1
-	110 bload "mypic.bin",$10000
-\end{verbatim}
+\begin{lstexample}
+100 bitmap at $18000 on clear $03
+110 bitmap at $18000 on: bitmap clear $03
+\end{lstexample}
+\end{entry}
 
-\section*{bsave}
-Saves a chunk of memory into a file. The 2nd parameter is the address in full memory space, *not* the 6502 CPU address. The 3rd parameter is the number of bytes to save.
+\refentry{bload}
+\begin{entry}
+Loads a file into memory. The 2nd parameter is the address in full memory space, \emph{not} the 6502 CPU address. In the default setup, for the RAM area (0000-7FFF) this will however be the same.\\
 
-In the default set up, for the RAM area (0000-7FFF) this will however be the same.
+The example below loads the binary file \path{mypic.bin} into the bitmap layer, which is stored in MMU page 8 onwards.
 
-\example{}
-\begin{verbatim}
-	100 bsave "memory.space",$0800,$7800
-\end{verbatim}
+\begin{lstexample}
+100 bitmap on: bitmap clear 1
+110 bload "mypic.bin",$10000
+\end{lstexample}
+\end{entry}
 
-\section*{call}
-Calls an assembly subroutine at the specified address. The address has to be given as the first parameter and can be specified in decimal or hex.
+\refentry{bsave}
+\begin{entry}
+Saves a chunk of memory into a file. The 2nd parameter is the address in full memory space, \emph{not} the 6502 CPU address. The 3rd parameter is the number of bytes to save. In the default setup, for the RAM area (0000-7FFF) this will however be the same.
 
-\example{}
-\begin{verbatim}
-	100 call $4000
-\end{verbatim}
 
-\section*{chr\$()}
-Convert an ASCII integer to a single character string.
-\example{}
-\begin{verbatim}
-	100 print chr$(42)
-\end{verbatim}
+\begin{lstexample}
+100 bsave "memory.space",$0800,$7800
+\end{lstexample}
+\end{entry}
 
-\section*{circle}
-Draws a circle, using the standard syntax. The vertical height defines the radius of the circle. See the section on graphics for drawing options
-\example{}
-\begin{verbatim}
-	100 circle here solid to 200,200
-\end{verbatim}
+\refentry{call}
+\begin{entry}
+Calls an assembly subroutine at the specified address. Optionally, you may provide up to three arguments, which will be loaded into the A, X, and Y registers, respectively.
 
-\section*{cprint}
-Operates the same as the print command, but control characters (e.g. 00-1F,80-FF) are printed using the characters from the FONT memory, not as control characters. The example below prints a horizontal upper bar character, not a new line.
-\example{}
-\begin{verbatim}
-	100 cprint chr$(13);
-\end{verbatim}
 
-\section*{cursor}
-Turns the flashing cursor on or off
-\example{}
-\begin{verbatim}
-	100 cursor on
-\end{verbatim}
+\begin{lstexample}
+100 call $4000
+110 call $5000, $ff, $f0
+\end{lstexample}
+\end{entry}
 
-\section*{dir}
-Shows all the files in the current drive.
-\example{}
-\begin{verbatim}
-	100 dir
-\end{verbatim}
+\refentry{chr\$()}
+\begin{entry}
+Convert an ASCII integer to a single-character string.
 
-\section*{dim}
+\begin{lstexample}
+100 print chr$(42)
+\end{lstexample}
+\end{entry}
+
+\refentry{circle}
+\begin{entry}
+Draws a circle. The vertical height defines the radius of the circle. See Chapter~\ref{chap:graphics}, \emph{Graphics} for drawing options.
+
+\begin{lstexample}
+100 circle here solid to 200,200
+\end{lstexample}
+\end{entry}
+
+\refentry{cprint}
+\begin{entry}
+Operates the same as the \kwd{print} command, but control characters (00-1F, 80-FF) are printed using the characters from the FONT memory, not as control characters. The example below prints a horizontal upper bar character, not a new line.
+
+\begin{lstexample}
+100 cprint chr$(13);
+\end{lstexample}
+\end{entry}
+
+\refentry{cursor}
+\begin{entry}
+Turns the flashing cursor on or off.
+
+\begin{lstexample}
+100 cursor on
+\end{lstexample}
+\end{entry}
+
+\refentry{dir}
+\begin{entry}
+Lists all the files in the current drive.
+
+\begin{lstexample}
+100 dir
+\end{lstexample}
+\end{entry}
+
+\refentry{dim}
+\begin{entry}
 Dimension number or string arrays with up to two dimensions, with a maximum of 254 elements in each dimension.
-\example{}
-\begin{verbatim}
-	100 dim a$(10),a_sine#(10)
-	110 dim name$(10,2)
-\end{verbatim}
 
-\section*{drive}
-Sets the current drive for load save. The default drive is zero.
-\example{}
-\begin{verbatim}
-	100 drive 1
-\end{verbatim}
+\begin{lstexample}
+100 dim a$(10), a_sine#(10)
+110 dim name$(10,2)
+\end{lstexample}
+\end{entry}
 
-\section*{end}
-Ends the current program and returns to the command line
-\example{}
-\begin{verbatim}
-	100 end
-\end{verbatim}
+\refentry{drive}
+\begin{entry}
+Sets the current drive for \kwd{load} and \kwd{save}. The default drive is zero.
 
-\section*{event()}
-Event tracks time. It is normally used to activate object movement or events in a game or other events, and generates true at predictable rates. It takes two parameters ; a variable and an elapsed time.\\
-If that variable is zero, then this function doesn’t return true until after that many tenths of seconds has elapsed. If it is non-zero, it tracks repeated events, so if you have event(evt1,70) this will return true every second – the clock operates at the timer rate, 70Hz.\\
-Note that if a game pauses the event times will continue, so if you use it to have an event every 20 seconds, this will work – but if you pause the game, then it will think the game time has elapsed. One way out is to zero the event variables when leaving pause – this will cause it to fire after another 20 seconds. \\
-If the event variable is set to -1 it will never fire, so this can be used to create one shots by setting it to -1 in the conditional part of the line\\
-An example is better, this prints Hello once a second.
-\example{}
-\begin{verbatim}
-	100 repeat
-	110 if event(myevent1,70) then print "Hello"
-	120 until false
-\end{verbatim}
+\begin{lstexample}
+100 drive 1
+\end{lstexample}
+\end{entry}
 
-\section*{false}
+\refentry{end}
+\begin{entry}
+Ends the current program and returns to the command line.
+
+\begin{lstexample}
+100 end
+\end{lstexample}
+\end{entry}
+
+\refentry{event()}
+\begin{entry}
+The \kwd{event()} function tracks elapsed time and is commonly used to trigger movement or actions in games. It returns \kwd{true} at predictable intervals, based on a 70Hz timer (i.e. 70 ticks per second). It takes two parameters: a variable and a duration in ticks.\\
+
+If the variable is zero, the function waits the specified number of ticks before returning \kwd{true} once. If the variable is non-zero, it tracks repeated events. For example, \code{event(evt1,70)} returns \kwd{true} once per second (since 70 ticks = 1 second).\\
+
+Note: Event timing continues even if the game is paused. So if an event is set to occur every 20 seconds, it may appear to fire during the pause. To avoid this, reset the event variable to zero when unpausing---this restarts the timer.\\
+
+If the event variable is set to -1, it disables the event. This can be used to implement one-shot timers by setting the variable to -1 once the event has fired.\\
+
+The example below prints \code{"Hello"} once a second.
+
+\begin{lstexample}
+100 repeat
+110   if event(myevent1,70) then print "Hello"
+120 until false
+\end{lstexample}
+\end{entry}
+
+\refentry{false}
+\begin{entry}
 Returns the constant zero.
-\example{}
-\begin{verbatim}
-	100 print false
-\end{verbatim}
 
-\section*{for next}
-A loop which repeats code a fixed number of times, which must be executed at least once. The step is 1 for to and -1 for downto. The final letter on next is not supported.
-\example{}
-\begin{verbatim}
-	100 for i = 1 to 10:print i:next i
-	110 for i = 10 downto 1:print i:next
-\end{verbatim}
+\begin{lstexample}
+100 print false
+\end{lstexample}
+\end{entry}
 
-\section*{frac()}
-Return the fractional part of a number
-\example{}
-\begin{verbatim}
-	100 print frac(3.14159)
-\end{verbatim}
+\refentry{for ... next}
+\begin{entry}
+A loop that repeats code a fixed number of times. The loop body will be executed at least once. The step is 1 for \kwd{to} and -1 for \kwd{downto}. The final letter on \kwd{next} is not supported.
 
-\section*{get() and get\$()}
-Wait for the next key press then , return either the character as a string, or as the ASCII character code. 
-\example{}
-\begin{verbatim}
-	100 print "Letter ";get$()
-\end{verbatim}
+\begin{lstexample}
+100 for i = 1 to 10: print i: next
+110 for i = 10 downto 1: print i: next
+\end{lstexample}
+\end{entry}
 
-\section*{getdate\$(n)}
-Reads the current date from the clock returning a string in the format "dd:mm:yy". The parameter is ignored.
-\example{}
-\begin{verbatim}
-	100 print "Today is ";getdate$(0)
-\end{verbatim}
+\refentry{frac()}
+\begin{entry}
+Return the fractional part of a number.
 
-\section*{gettime\$(n)}
-Reads the current time from the clock returning a string in the format "hh:mm:ss". The parameter is ignored.
-\example{}
-\begin{verbatim}
-	100 print "It is now ";gettime$(0)
-\end{verbatim}
+\begin{lstexample}
+100 print frac(3.14159)
+\end{lstexample}
+\end{entry}
 
-\section*{gfx}
-Sends three parameter command directly to the graphics subsystem. Often the last two parameters are coordinates (not always).  It is not advised to use this for general use as programs would be somewhat unreadable.\\
-This is a direct call to the graphics library. The parameters are described in graphics.txt in the documents directory in the github. Use of this is rare.
-\example{}
-\begin{verbatim}
-	100 gfx 22,130,100
-\end{verbatim}
+\refentry{get() / get\$()}
+\begin{entry}
+Wait for the next key press, then return either the character as a string, or as the ASCII character code.
 
-\section*{gosub}
-Call a routine at a given line number. This is provided for compatibility only. Do not use it except for typeins of old listings or I will hunt you down and torture you.  
-\example{}
-\begin{verbatim}
-	100 gosub 1000
-\end{verbatim}
+\begin{lstexample}
+100 print "Letter ";get$()
+\end{lstexample}
+\end{entry}
 
-\section*{goto}
-Transfer execution to given line number. See GOSUB ; same result. If it's for typing in old programs, fair enough, but please don't use it for new code.
-\example{}
-\begin{verbatim}
-	100 goto 666:rem “will happen if you use goto. you don’t need it”
-\end{verbatim}
+\refentry{getdate\$(n)}
+\begin{entry}
+Reads the current date from the clock returning a string in the format \code{"dd:mm:yy"}. The parameter is ignored.
 
-\section*{hit()}
-Tests if two sprites overlap. This is done using a box test based on the size of the sprite (e.g. 8x8,16x16,24x24,32x32)
-The value returned is zero for no collision, or the lower of the two coordinate differences from the centre, approximately.
-This only works if sprites are positioned via the graphics system ; there is no way of reading Sprite memory to ascertain where the physical sprites are.
-\example{}
-\begin{verbatim}
-	100 print hit(1,2)
-\end{verbatim}
+\begin{lstexample}
+100 print "Today is ";getdate$(0)
+\end{lstexample}
+\end{entry}
 
-\section*{if then and if else endif}
-If has two forms. The first is classic BASIC, e.g. if <condition> then <do something>. All the code is on one line. The THEN is mandatory - you cannot write if a = 2 goto 420 (say)
-\example{}
-\begin{verbatim}
-	100 if name=”benny” then my_iq = 70
-\end{verbatim}
-The second form is more complex. It allows multi line conditional execution, with an optional else clause. This is why there is a death threat attached to GOTO. This is better.  Note the endif is mandatory, you cannot use a single line if then else. The instruction does not have to all be on the same line.
-\example{}
-\begin{verbatim}
-	100 if age < 18:print “child”:else:print “adult”:endif
-\end{verbatim}
+\refentry{gettime\$(n)}
+\begin{entry}
+Reads the current time from the clock returning a string in the format \code{"hh:mm:ss"}. The parameter is ignored.
 
-\section*{image}
-Draws a possibly scaled or flipped sprite image on the bitmap, using the standard syntax. Flipping is done using bits 7 and 6 of the mode (e.g. \$80 and \$40) in the colour option. This requires both sprites and bitmap to be on. For more information see the graphics section.
-\example{}
-\begin{verbatim}
-	100 image 4 dim 3 colour 0,$80 to 100,100
-\end{verbatim}
+\begin{lstexample}
+100 print "It is now ";gettime$(0)
+\end{lstexample}
+\end{entry}
 
-\section*{inkey() and inkey\$()}
-If a character key has been pressed, return either the character as a string, or as the ASCII character code. If no key is available return "" or 0.\\
-This uses key presses, it does not detect if a key has been pressed, merely that it has been in the past. If you want to check whether a key is up or down, use keydown()
-\example{}
-\begin{verbatim}
-	100 print inkey(),inkey$()
-\end{verbatim}
+\refentry{gfx}
+\begin{entry}
+Sends a three-parameter command directly to the graphics subsystem. The last two parameters are often coordinates, although not always.\\
 
-\section*{input}
-Inputs numbers or strings from the keyboard. \\
-Input has always had a somewhat varying syntax historically. This version uses the same syntax as print, except that where there is a variable a value is entered into that variable, rather than the variable being printed.
-\example{}
-\begin{verbatim}
-	100 input "Your name is ?";a$
-\end{verbatim}
+This is a low-level call to the graphics library and is generally discouraged for regular use. The command parameters are documented in the \path{graphics.txt} document in the SuperBASIC repository.\footnote{\url{https://github.com/FoenixRetro/f256-superbasic/blob/main/documents/graphics.txt}} Use of this function is uncommon.
 
-\section*{int()}
-Returns the integer part of a number
-\example{}
-\begin{verbatim}
-	100 print int(3.14159)
-\end{verbatim}
+\begin{lstexample}
+100 gfx 22,130,100
+\end{lstexample}
+\end{entry}
 
-\section*{isval()}
-This is a support for val and takes the same parameter, a string  This deals with the problem with val() that it errors if you give it a non-numeric value. This checks to see if the string is a valid number  and returns -1 if so, 0 if it is not.
-\example{}
-\begin{verbatim}
-	100 print isval(“42”)
-	110 print isval(“i like chips in gravy”)
-\end{verbatim}
+\refentry{gosub}
+\begin{entry}
+Calls a routine at the specified line number. Provided for compatibility with older BASIC programs. For new code, use named procedures instead (see Chapter~\ref{chap:structured}).
 
-\section*{itemcount()}
-Together , itemcount and itemget provide a way of encoding multiple data items in strings. A multiple-element string has a separating character, which can be any ASCII character, often a comma. 
-itemcount() takes a string and a separator and returns the number of items in the string if separated by that separator. The example prints '2' as there are two elements separated by a comma, the strings hello and world.
-\example{}
-\begin{verbatim}
-	100 print itemcount("hello,world",",")
-\end{verbatim}
+\begin{lstexample}
+100 gosub 1000
+\end{lstexample}
+\end{entry}
 
-\section*{itemget\$()}
-Together , itemcount and itemget provide a way of encoding multiple data items in strings. A multiple-element string has a separating character, which can be any ASCII character, often a comma.  itemget\$() takes three parameters, the string, the index of the substring required, which starts at '1' and the separator. A bad index will generate a range error.
-The example will print 'lizzie', this being the third item.
-\example{}
-\begin{verbatim}
-	100 print itemget$("paul,jane,lizzie,jack",3,",")
-\end{verbatim}
+\refentry{goto}
+\begin{entry}
+Transfers execution to the specified line number. Consider using structured programming constructs (Chapter~\ref{chap:structured}) instead.
 
+\begin{lstexample}
+10 print "Hi there! ";
+20 goto 10
+\end{lstexample}
+\end{entry}
 
-\section*{joyb()}
-Returns a value indicating the status of the fire buttons on a gamepad, with the main fire button being bit 0. Takes a single parameter, the number of the gamepad.\\
+\refentry{hit()}
+\begin{entry}
+Tests whether two sprites overlap, using a bounding box test based on their size (e.g., 8×8, 16×16, 24×24, or 32×32).\\
 
-The keyboard keys ZX KM L (left/right/up/down/fire) are also mapped onto this controller, so a Game Controller is not required.
+Returns zero if there is no collision, or the smaller of the two coordinate differences from the center.\\
 
-\example{}
-\begin{verbatim}
-	100 if joyb(0) & 1 then fire()
-\end{verbatim}
+This function only works for sprites positioned using the graphics system; there is no way to read sprite memory directly to determine their on-screen positions.
 
-\section*{joyx() joyy()}
-Returns the directional value of a gamepad in the x and y axes respectively as -1,0 or 1, with 1 being right and down. Each takes a single parameter which is the number of the pad.\\
+\begin{lstexample}
+100 print hit(1,2)
+\end{lstexample}
+\end{entry}
 
-The keyboard keys ZX KM L (left/right/up/down/fire) are also mapped onto this controller, so a Game Controller is not required.
+\refentry{if ... then}
+\refentrycompact{if ... else ... endif}
+\begin{entry}
+The \kwd{if} statement. Comes in two forms:\\
 
-\example{}
-\begin{verbatim}
-	100 x = x + joyx(0)
-\end{verbatim}
+The first is the classic BASIC style: \kwd{if} \textit{<condition>} \kwd{then} \textit{<statement>}. All code must be on a single line, and \kwd{then} is mandatory:
 
-\section*{keydown()}
-Checks to see if a key is currently pressed or not - the parameter passed is the kernel raw key code. The demo below is also a simple program for identifying those raw key codes.
-\example{}
-\begin{verbatim}
-	100 repeat
-	110 for i = 0 to 255
-	120 if keydown(i) then print "Key pressed ";i
-	130 next
-	140 until false
-\end{verbatim}
+\begin{lstexample}
+100 if name$ = "Alice" then age = 7
+110 if name$ = "Dinah" then goto 200
+\end{lstexample}
 
-\section*{load}
+The second form, \kwd{if} ... [\kwd{else} ...] \kwd{endif}, supports multi-line conditional logic and includes an optional \kwd{else} clause. The \kwd{endif} keyword is mandatory, even if no \kwd{else} is used. This form can also be written on a single line by separating each statement with colons:
+
+\begin{lstexample}
+100 if age < 18: print "child": else: print "adult": endif
+110 if name$ = "Bob"
+120   print "Hello, Bob!"
+130 else
+140   print "Hello, stranger!"
+150 endif
+\end{lstexample}
+\end{entry}
+
+\refentry{image}
+\begin{entry}
+Draws a sprite image onto the bitmap, with optional scaling or flipping. Flipping is controlled by bits 7 and 6 of the mode byte (i.e., \$80 for horizontal flip, \$40 for vertical flip) in the colour parameter. Both the sprite and bitmap systems must be enabled. For more details, see Chapter~\ref{chap:graphics}.
+
+\begin{lstexample}
+100 image 4 dim 3 colour 0,$80 to 100,100
+\end{lstexample}
+\end{entry}
+
+\refentry{inkey()}
+\refentrycompact{inkey\$()}
+\begin{entry}
+Returns the most recent key press, if any. \kwd{inkey()} returns the ASCII code of the key, while \kwd{inkey\$()} returns the character as a string. If no key has been pressed, they return \code{0} and \code{""} respectively.\\
+
+These functions check for past key presses---they do not detect whether a key is currently being held down. To check the current state of a key (up or down), use \kwd{keydown()} instead.
+
+\begin{lstexample}
+100 print inkey(), inkey$()
+\end{lstexample}
+\end{entry}
+
+\refentry{input}
+\begin{entry}
+Inputs numbers or strings from the keyboard. The syntax is identical to \kwd{print}, but instead of displaying values, it reads input into the specified variables. Wherever a variable appears, a value will be read from the keyboard and stored in that variable.
+
+\begin{lstexample}
+100 input "Your name is ?";a$
+\end{lstexample}
+\end{entry}
+
+\refentry{int()}
+\begin{entry}
+Returns the integer part of a number.
+
+\begin{lstexample}
+100 print int(3.14159)
+\end{lstexample}
+\end{entry}
+
+\refentry{isval()}
+\begin{entry}
+Returns \kwd{true} if a string represents a valid numeric value, \kwd{false} otherwise. A companion to \kwd{val()}.
+
+\begin{lstexample}
+100 print isval("42")
+110 print isval("I like chips with salsa")
+\end{lstexample}
+\end{entry}
+
+\refentry{itemcount()}
+\begin{entry}
+Takes a string and a separator, and returns the number of items found by splitting the string at each occurrence of the separator. A companion to \kwd{itemget\$()}.\\
+
+The example below prints \code{2}, as the string contains two items, \code{"hello"} and \code{"world"}, separated by a comma.
+
+\begin{lstexample}
+100 print itemcount("hello,world", ",")
+\end{lstexample}
+\end{entry}
+
+\refentry{itemget\$()}
+\begin{entry}
+Extracts the specified item from a string split using a separator. Takes three parameters: the input string, the index of the desired item (starting from 1), and the separator. Returns the specified sub-item. If the index is out of range, a range error is raised. See also \kwd{itemcount()}.\\
+
+The example below prints \code{"lizzie"}, which is the third item in the list.
+
+\begin{lstexample}
+100 print itemget$("paul,jane,lizzie,jack", 3, ",")
+\end{lstexample}
+\end{entry}
+
+\refentry{joyb()}
+\begin{entry}
+Returns a integer value indicating the status of the fire buttons on a joystick or gamepad. Bit 0 corresponds to the main fire button. Takes a single parameter, the gamepad number.\\
+
+Keyboard keys Z / X / K / M / L (left / right / up / down / fire) are also mapped to this input, so a physical gamepad is not required.
+
+\begin{lstexample}
+100 if joyb(0) & 1 then fire()
+\end{lstexample}
+\end{entry}
+
+\refentry{joyx()}
+\refentrycompact{joyy()}
+\begin{entry}
+Return the directional value of a joystick or gamepad along the X or Y axis. A value of \code{1} indicates movement to the right (X) or down (Y), \code{-1} indicates movement to the left or up, and \code{0} means no movement. Each function takes a single argument, the gamepad number.\\
+
+Keyboard keys Z / X / K / M / L (left / right / up / down / fire) are also mapped to this input, so a physical gamepad is not required.
+
+\begin{lstexample}
+100   cls: cursor off 
+110   while true 
+120     print at 0,0;"x:";joyx(0);" y:";joyy(0);"  ";
+130   wend 
+\end{lstexample}
+\end{entry}
+
+\refentry{keydown()}
+\begin{entry}
+Checks whether a key is currently being pressed. The function takes a single parameter, the raw key code. The example below also serves as a simple tool for identifying these raw key codes.
+
+\begin{lstexample}
+100 repeat
+110   for i = 0 to 255
+120     if keydown(i) then print "Key pressed ";i
+130   next
+140 until false
+\end{lstexample}
+\end{entry}
+
+\refentry{load}
+\begin{entry}
 Loads a BASIC program from the current drive.
-\example{}
-\begin{verbatim}
-	load "game.bas"
-\end{verbatim}
 
-\section*{left\$()}
-Returns several characters from a string counting from the left
-\example{}
-\begin{verbatim}
-	100 print left$("mystring",4)
-\end{verbatim}
+\begin{lstexample}
+load "game.bas"
+\end{lstexample}
+\end{entry}
 
-\section*{len()}
-Returns the length of the string as an integer
-\example{}
-\begin{verbatim}
-	100 print len(“hello, world”)
-\end{verbatim}
+\refentry{left\$()}
+\begin{entry}
+Returns a specified number of characters from the beginning of a string.
 
-\section*{let}
-Assignment statement. The LET is optional. You can also use \@a where a is a reference ; so ptr = \@a ; \@ptr = 42 is the same in practice as a = 42.
-\example{}
-\begin{verbatim}
-	100 let a = 42
-	110 a$=”hello”
-	120 a#=22.7
-\end{verbatim}
+\begin{lstexample}
+100 print left$("mystring",4)
+\end{lstexample}
+\end{entry}
 
-\section*{line}
-Draws a line, using the standard syntax which is explained in the graphics section.
-\example{}
-\begin{verbatim}
-	100 line 100,100 colour $e0 to 200,200
-\end{verbatim}
+\refentry{len()}
+\begin{entry}
+Returns the length of the string, that is, the number of characters in the string.
 
-\section*{list}
-Lists the program.  It is possible to list any part of the program using the line numbers, or list a procedure by name.
-\example{}
-\begin{verbatim}
-	100 list
-	110 list 1000
-	120 list 100,200
-	130 list ,400
-	140 list myfunction()
-\end{verbatim}
+\begin{lstexample}
+100 print len("hello, world")  ' prints 12
+\end{lstexample}
+\end{entry}
 
-\section*{local}
-Defines the list of variables (no arrays allowed) as local to the current procedure. The locals are initialised to an empty string or zero depending on their type. 
-\example{}
-\begin{verbatim}
-	100 local test$,count
-\end{verbatim}
+\refentry{let}
+\begin{entry}
+Assignment statement. In SuperBASIC, the \kwd{let} keyword is optional and is provided for compatibility with older BASIC dialects.
 
-\section*{max() min()}
+\begin{lstexample}
+100 let a = 42  ' you can use LET
+110 b = 17      ' ... but you don't have to
+\end{lstexample}
+\end{entry}
+
+\refentry{line}
+\begin{entry}
+Draws a line on the bitmap layer. See Chapter~\ref{chap:graphics} for more details.
+
+\begin{lstexample}
+100 line 100,100 colour $e0 to 200,200
+\end{lstexample}
+\end{entry}
+
+\refentry{list}
+\begin{entry}
+Lists the program. It is possible to list any part of the program using the line numbers, or list a procedure by name.
+
+\begin{lstexample}
+100 list
+110 list 1000
+120 list 100,200
+130 list ,400
+140 list myfunction()
+\end{lstexample}
+\end{entry}
+
+\refentry{local}
+\begin{entry}
+Defines the list of variables (no arrays allowed) as local to the current procedure. The locals are initialised to an empty string or zero depending on their type.
+
+\begin{lstexample}
+100 local test$,count
+\end{lstexample}
+\end{entry}
+
+\refentry{max()}
+\refentrycompact{min()}
+\begin{entry}
 Returns the largest or smallest of the parameters, there can be any number of these (at least one). You can’t mix strings and integers.
-\example{}
-\begin{verbatim}
-	100 print max(3,42,5)
-\end{verbatim}
 
-\section*{mdelta}
-Gets the current delta status of the PS/2 mouse. 6 reference parameters (normally integer variables) are provided. These provide the cumulative mouse changes in the x,y,z axes, and the number of times the left, middle and right buttons have been pressed.
-\example{}
-\begin{verbatim}
-	100 mdelta dx,dy,dz,lmb,mmb,rmb
-\end{verbatim}
+\begin{lstexample}
+100 print max(3,42, 5)  ' prints 5
+\end{lstexample}
+\end{entry}
 
-\section*{memcopy}
-This command is an interface to the F256 Junior's DMA hardware. A MEMCOPY command has several formats. \\
+\refentry{mdelta}
+\begin{entry}
+Gets the current delta status of the mouse. 6 reference parameters (normally integer variables) are provided. These provide the cumulative mouse changes in the x,y,z axes, and the number of times the left, middle and right buttons have been pressed.
+
+\begin{lstexample}
+100 mdelta dx,dy,dz,lmb,mmb,rmb
+\end{lstexample}
+\end{entry}
+
+\refentry{memcopy}
+\begin{entry}
+This command is an interface to the F256's DMA hardware. A \kwd{memcopy} command has several formats. \\
+
 The first in line 100 is a straight linear copy of memory from \$10000 to \$18000 of length \$4000.\\ The second in line 110 is a linear fill from \$10000 , to \$4000 bytes on, with the byte value \$F7 \\
-The third in line 120 is a rectangular area of memory, 64 x 48 pixels or bytes, from \$10000. The 320 is the characters per line, normally 320 for the Junior. This copies a 2D area of screen memory rather than a linear one. \\
+
+The third in line 120 is a rectangular area of memory, 64 x 48 pixels or bytes, from \$10000. The 320 is the characters per line, normally 320 for the F256. This copies a 2D area of screen memory rather than a linear one. \\
+
 The fourth, line 130 is a window, as defined, being filled with the byte pattern \$18. \\
+
 The final shows an alternate way of showing addresses. This makes use of the knowledge that this normally video memory - it doesn't have to be of course - at 32,32 and at 128,128 later, convert to the addresses of those pixels in bitmap memory.
-\begin{verbatim}
-	100 memcopy $10000,$4000 to $18000
-	110 memcopy $10000,$4000 poke $F7
-	120 memcopy $10000 rect 64,48 by 320 to $18000
-	130 memcopy $10000 rect 64,48 by 320 poke $18
-	140 memcopy at 32,32 rect 64,48 by 320 to at 128,128
-\end{verbatim}
 
-\section*{mid\$()}
-Returns a subsegment of a string, given the start position (first character is 1) and the length, so mid\$(“abcdef”,3,2) returns “cd”. 
-\example{}
-\begin{verbatim}
-	100 print mid$(“hello”,2,3)
-	110 print mid$(“another word”,2,99)
-\end{verbatim}
+\begin{lstexample}
+100 memcopy $10000,$4000 to $18000
+110 memcopy $10000,$4000 poke $F7
+120 memcopy $10000 rect 64,48 by 320 to $18000
+130 memcopy $10000 rect 64,48 by 320 poke $18
+140 memcopy at 32,32 rect 64,48 by 320 to at 128,128
+\end{lstexample}
+\end{entry}
 
-\section*{mouse}
+\refentry{mid\$()}
+\begin{entry}
+Returns a subsegment of a string, given the start position (first character is 1) and the length, so \code{mid\$(“abcdef”,3,2)} returns \code{“cd”}.
+
+\begin{lstexample}
+100 print mid$("hello",2,3)
+110 print mid$("another word",2,99)
+\end{lstexample}
+\end{entry}
+
+\refentry{mouse}
+\begin{entry}
 Gets the current status of the PS/2 mouse. 6 reference parameters (normally integer variables) are provided. These provide the current mouse position in the x,y,z axes, and the status of times the left, middle and right buttons.
-\example{}
-\begin{verbatim}
-	100 mouse x,y,z,isx,isy,isz
-\end{verbatim}
 
-\section*{new}
+\begin{lstexample}
+100 mouse x,y,z,isx,isy,isz
+\end{lstexample}
+\end{entry}
+
+\refentry{new}
+\begin{entry}
 Erases the current program
-\example{}
-\begin{verbatim}
-	100 new
-\end{verbatim}
 
-\section*{not()}
+\begin{lstexample}
+100 new
+\end{lstexample}
+\end{entry}
+
+\refentry{not()}
+\begin{entry}
 Unary operator returning the logical not of its parameter, e.g. 0 if non-zero -1 otherwise.
-\example{}
-\begin{verbatim}
-	100 print not(42)
-\end{verbatim}
 
-\section*{option}
+\begin{lstexample}
+100 print not(42)
+\end{lstexample}
+\end{entry}
+
+\refentry{option}
+\begin{entry}
 Option is used for general control functions which are not common enough to justify their own keyword.\\
-Option 0-7 set highlighting colours for Comment Foreground, Comment Background, Line Number, Token, Constant, Identifier, Punctuation, Data respectively, the lower 4 bits setting the colour. Setting the upper bit 7 will disable the background change. (The example sets the listing to all white)\\
-\example{}
-\begin{verbatim}
-	100 for i = 0 to 7:option i,128+15:next
-\end{verbatim}
 
-\section*{palette}
+Option 0-7 set highlighting colours for comment foreground, comment background, line number, token, constant, identifier, punctuation, data respectively, the lower 4 bits setting the colour. Setting the upper bit 7 will disable the background change.\\
+
+The example below sets the listing to all white.
+
+\begin{lstexample}
+100 for i = 0 to 7:option i,128+15:next
+\end{lstexample}
+\end{entry}
+
+\refentry{palette}
+\begin{entry}
 Sets the graphics palette. The parameters are the colour id and the red, green and blue graphics component. On start up, the palette is rrrgggbb
-\example{}
-\begin{verbatim}
-	100 palette 1,255,128,0
-\end{verbatim}
 
-\section*{peek() peekw() peekl() peekd() }
-The peek, peekw, peekl and peekd functions retrieve 1-4 bytes from the 6502 memory space.
-\example{}
-\begin{verbatim}
-	100 print peekd(42),peek(1)
-\end{verbatim}
+\begin{lstexample}
+100 palette 1,255,128,0
+\end{lstexample}
+\end{entry}
 
-\section*{playing()}
-Returns true if a channel is currently playing a sound.
-\example{}
-\begin{verbatim}
-	100 print playing(0)
-\end{verbatim}
+\refentry{peek()}
+\refentrycompact{peekw()}
+\refentrycompact{peekl()}
+\refentrycompact{peekd()}
+\begin{entry}
+The \kwd{peek}, \kwd{peekw}, \kwd{peekl} and \kwd{peekd} functions retrieve 1-4 bytes from the 6502 memory space.
 
-\section*{plot}
+\begin{lstexample}
+100 print peekd(42), peek(1)
+\end{lstexample}
+\end{entry}
+
+\refentry{playing()}
+\begin{entry}
+Returns \kwd{true} if a channel is currently playing a sound.
+
+\begin{lstexample}
+100 print playing(0)
+\end{lstexample}
+\end{entry}
+
+\refentry{plot}
+\begin{entry}
 Plot a point in the current colour using the standard syntax which is described in the graphics section.
-\example{}
-\begin{verbatim}
-	100 plot to 100,200
-\end{verbatim}
 
-\section*{poke pokew pokel poked}
-The poke, pokew, pokel and poked functions write one to four bytes to the 6502 memory space.
-\example{}
-\begin{verbatim}
-	100 poke 4096,1: pokew $c004,$a705
-\end{verbatim}
+\begin{lstexample}
+100 plot to 100,200
+\end{lstexample}
+\end{entry}
 
-\section*{print}
-Prints to the current output device, either strings or numbers (which are preceded by a space). Print a ‘ goes to the next line. Print a , goes to the next tab stop. A return is printed unless the command ends in ; or , . 
-\example{}
-\begin{verbatim}
-	100 print 42,”hello”’”world”
-\end{verbatim}
+\refentry{poke} 
+\refentrycompact{pokew}
+\refentrycompact{pokel}
+\refentrycompact{poked}
+\begin{entry}
+The \kwd{poke}, \kwd{pokew}, \kwd{pokel} and \kwd{poked} functions write one to four bytes to the specified memory address.
 
-\section*{proc endproc}
-Simple procedures. These should be used rather than gosub. Or else.  The empty brackets are mandatory even if there aren’t any parameters (the aim is to use value parameters).
-\example{}
-\begin{verbatim}
-	100 printmessage(“hello”,42)
-	110 end
-	120 proc printmessage(msg$,n)
-	130 print msg$+“world  x “+str$(n)
-	140 endproc
-\end{verbatim}
+\begin{lstexample}
+100 poke 4096,1: pokew $c004,$a705
+\end{lstexample}
+\end{entry}
 
-\section*{rnd() random()}
-Generates random numbers. this has two forms, which is still many fewer than odo. rnd() behaves like Microsoft basic, negative numbers set the seed,  0 repeats the last value, and positive numbers return an integer 0 <= n < 1. random(n) returns a number from 0 to n-1
-\example{}
-\begin{verbatim}
-	100 print rnd(1),random(6)
-\end{verbatim}
+\refentry{print}
+\begin{entry}
+Displays text or numbers on the screen at the current cursor position. You can print strings, numbers, variables, or results of calculations, and you can mix them together in the same statement.
 
-\section*{read / data}
-Reads from DATA statements the types must match. For syntactic consistency, string data must be in quote marks
-\example{}
-\begin{verbatim}
-	100 read a$,b
-	110 data “hello world”
-	120 data 59
-\end{verbatim}
+\begin{lstexample}
+100 print "2 + 2 = " 4
+110 print "Hmm,"; (17 - 10) * 6; " sounds familiar..."
+120 input "What's your name?", $name
+130 print "Hello, "; $name; "!"
+\end{lstexample}
 
-\section*{rect}
-Draws a rectangle, using the standard syntax described in the graphics section
-\example{}
-\begin{verbatim}
-	100 rect 100,100 colour $ff to 200,200
-\end{verbatim}
+Items separated by a space or a semicolon (\code{;}) are printed directly after one another, while a comma (\code{,}) places the next item at the next tab position.\\
 
-\section*{restore}
-Resets the data pointer to the start of the program
-\example{}
-\begin{verbatim}
-	100 restore
-\end{verbatim}
+Normally, \kwd{print} finishes by moving the cursor to a new line, but if it ends with a semicolon \mbox{(\code{;})} or comma (\code{,}), the next \kwd{print} will continue on the same line.
 
-\section*{repeat until}
+\begin{lstexample}
+100 print "Goodbye, "; 
+110 print "feet!"
+\end{lstexample}
+
+\subsection*{\kwd{at} modifier}
+
+You can use the \kwd{at} modifier to position the cursor and the following \kwd{print} output at specific screen coordinates.  SuperBASIC’s default text mode fits 80 characters across and 60 lines down. The \kwd{at} coordinates are zero-based and given as \code{row}, \code{column}:
+
+\begin{lstexample}
+100 cls
+110 ' print at row 4, column 9
+120 print at 4, 9; "HELLO"
+\end{lstexample}
+
+{ % begin diagram
+    % ===== Parameters you can tweak =====
+    % Cell size (increase these to make characters larger)
+    \newcommand{\cellw}{0.38cm}
+    \newcommand{\cellh}{0.38cm}
+    
+    % Cross-cut position (how much of left/top to keep)
+    \newcommand{\cutX}{25}   % show 0..cutX columns on the left
+    \newcommand{\cutY}{15}   % show 0..cutY rows on the top
+    
+    % Cutline params
+ %   0.35mm, segment length=3mm
+    \newcommand{\amp}{0.09}   % amplitude (cells)
+    \newcommand{\lam}{1}    % wavelength (cells) 0.789
+    \newcommand{\step}{0.25}  % sampling step (cells): smaller = smoother
+    \newcommand{\samps}{400}  % smoothness
+
+    % Corner patch sizes on the far sides
+    \newcommand{\rightW}{3}  % width of right-side patches (near col 79)
+    \newcommand{\bottomH}{3} % height of bottom-side patches (near row 59)
+    
+    % Tiny visual gaps (kept small even if many cells omitted)
+    \newcommand{\gapX}{0.5}
+    \newcommand{\gapY}{0.5}
+    
+    % Size of the compressed drawing
+    \pgfmathsetmacro{\TotalW}{\cutX + \gapX + \rightW}
+    \pgfmathsetmacro{\TotalH}{\cutY + \gapY + \bottomH}
+    
+    % Margins for outside labels (cells). Increase if your labels are longer.
+    \newcommand{\padL}{2}   % left margin
+    \newcommand{\padR}{2}   % right margin
+    \newcommand{\padT}{2}   % top margin
+    \newcommand{\padB}{2}   % bottom margin
+    
+    % Letter H coordinates
+    \newcommand{\rowH}{4}
+    \newcommand{\colH}{9}
+    
+    \begin{tikzpicture}[x=\cellw, y=-\cellh, line cap=rect] % negative y so (0,0) is top-left
+      % Clamp bbox to include outside labels as well
+      \path[use as bounding box]
+        (-\padL, -\padT) rectangle (\TotalW+\padR, \TotalH+\padB);
+      
+      % Keep nodes from adding unexpected extra space
+      \tikzset{every node/.style={outer sep=0pt}}
+    
+      % Cell coordinate
+      \newcommand{\coord}[3]{%
+        \node[font=\ttfamily\fontsize{2mm}{2mm}\selectfont] at (#2 + 0.5, #1 + 0.5) {#3};}
+      
+      % Monospace cell text centered in a cell
+      \newcommand{\cell}[3]{%
+        \node[font=\ttfamily\fontsize{4.4mm}{4.4mm}\selectfont,text=raspberry] at (#2 + 0.5, #1 + 0.5) {#3};}
+    
+      % Draw grid over integer-inclusive rectangle
+      \newcommand{\gridrect}[4]{
+        \pgfmathtruncatemacro{\xa}{#1}\pgfmathtruncatemacro{\ya}{#2}
+        \pgfmathtruncatemacro{\xb}{#3}\pgfmathtruncatemacro{\yb}{#4}
+        \foreach \x in {\xa,...,\xb}{\draw[gray!45, line width=0.15pt] (\x,\ya) -- (\x,\yb);}
+        \foreach \y in {\ya,...,\yb}{\draw[gray!45, line width=0.15pt] (\xa,\y) -- (\xb,\y);}
+      }
+      
+      % Curvy cutline
+      \tikzset{cutline/.style={decorate, decoration={snake, amplitude=0.35mm, segment length=3.8mm}, draw=gray!45, thin}}
+    
+      % === HIGHLIGHT LAYER (drawn before the grid) ===
+      % highlight H
+      \fill[gray!10] (0,\rowH) rectangle (\colH+1,\rowH+1);
+      \fill[gray!10] (\colH,0) rectangle (\colH+1,\rowH+1);
+    
+      % ===== TOP-LEFT (0..cutX, 0..cutY) =====
+       \begin{scope}
+          \clip
+            (0,0) -- (\cutX,0)
+            % Right (vertical) wavy edge: zero at y=0 and y=cutY
+            -- plot[domain=0:\cutY, samples=\samps, variable=\t]
+                 ({\cutX + \amp*sin(360*(\t - \cutY + 0.04)/\lam)}, {\t})
+            % Bottom (horizontal) wavy edge: zero at x=cutX and x=0
+            -- (\cutX,\cutY) % ensure we are exactly at the corner
+            -- plot[domain=\cutX:0, samples=\samps, variable=\u]
+                 ({\u}, {\cutY + \amp*sin(360*(\u - \cutX + 0.58)/\lam)})
+            -- (0,\cutY) -- cycle;
+                   
+          \gridrect{0}{0}{\cutX}{\cutY}
+        \end{scope}
+
+      % wavy edges
+      \draw[cutline] (\cutX,\cutY) -- (\cutX,0) ;  % right wavy
+      \draw[cutline] (\cutX,\cutY) -- (0,\cutY);  % bottom wavy
+
+      % true outer borders
+      \draw[thick] (0,0) -- (\cutX,0);    % top
+      \draw[thick] (0,0) -- (0,\cutY);    % left
+
+      % column coordinates up to H
+      \foreach \x in {0,...,\colH}{\coord{-1}{\x}{\x};}
+      \coord{-1}{\colH+1}{\raisebox{-1.25ex}{$\cdots$}}
+
+      % row coordinates up to H
+      \foreach \y in {0,...,\rowH}{\coord{\y}{-1}{\y};}
+      \coord{\rowH+1}{-1}{$\vdots$}
+    
+      % ===== TOP-RIGHT (near top-right corner), compressed rightward =====
+      % Size: rightW × (cutY+1 rows high)
+      \begin{scope}[shift={(\cutX+\gapX, 0)}]
+        \begin{scope}
+            \clip
+                (0,0) -- (\rightW,0) -- (\rightW,\cutY)                 % outer top & right
+                % bottom wavy edge: from right->left, zero at u=0 (seam)
+                -- plot[domain=\rightW:0, samples=\samps, variable=\u]
+                     ({\u}, {\cutY + \amp*sin(360*(\u - 0 - 0.58)/\lam)})
+                -- (0,\cutY) % ensure we are exactly at the corner
+                % left wavy edge: from bottom->top, same phase as TL’s vertical
+                -- plot[domain=\cutY:0, samples=\samps, variable=\t]
+                     ({0 + \amp*sin(360*(\t - \cutY + 0.04)/\lam)}, {\t})
+                -- cycle;
+        
+          \gridrect{0}{0}{\rightW}{\cutY}
+        \end{scope}
+
+        % wavy edges
+        \draw[cutline] (0,\cutY) -- (0,0);        % faces vertical gap
+        \draw[cutline] (0,\cutY) -- (\rightW,\cutY); % faces horizontal gap
+
+        % true outer borders (top and right outer edge)
+        \draw[thick] (0,0) -- (\rightW,0);
+        \draw[thick] (\rightW,0) -- (\rightW,\cutY);
+      \end{scope}
+    
+      % ===== BOTTOM-LEFT (near bottom-left corner), compressed downward =====
+      % Size: (cutX+1 cols wide) × bottomH
+      \begin{scope}[shift={(0, \cutY+\gapY)}]
+        \begin{scope}
+          \clip
+            (0,\bottomH) -- (0,0)
+            % top wavy edge: left->right, same phase as TL’s horizontal
+            -- plot[domain=0:\cutX, samples=\samps, variable=\u]
+                 ({\u}, {0 + \amp*sin(360*(\u - \cutX + 0.58)/\lam)})
+            -- (\cutX,0) % ensure we are exactly at the corner
+            % right wavy edge: top->bottom, zero at t=0 (seam)
+            -- plot[domain=0:\bottomH, samples=\samps, variable=\t]
+                 ({\cutX + \amp*sin(360*(\t - 0 - 0.04)/\lam)}, {\t})
+            -- (\cutX,\bottomH) -- cycle;                        % outer bottom
+
+          \gridrect{0}{0}{\cutX}{\bottomH}
+        \end{scope}
+        
+        % wavy edges
+        \draw[cutline] (\cutX,0) -- (0,0);        % faces horizontal gap
+        \draw[cutline] (\cutX,0) -- (\cutX,\bottomH); % faces vertical gap
+
+        % true outer borders (left and bottom outer edge)
+        \draw[thick] (0,0) -- (0,\bottomH);
+        \draw[thick] (0,\bottomH) -- (\cutX,\bottomH);
+      \end{scope}
+    
+      % ===== BOTTOM-RIGHT (near bottom-right corner), compressed both ways =====
+      \begin{scope}[shift={(\cutX+\gapX, \cutY+\gapY)}]
+        \begin{scope}
+          \clip
+            (\rightW,\bottomH) -- (\rightW,0)
+            % top wavy edge: right->left, zero at u=0 (seam with TR)
+            -- plot[domain=\rightW:0, samples=\samps, variable=\u]
+                 ({\u}, {0 + \amp*sin(360*(\u - 0 - 0.58)/\lam)})
+            -- (0,0) % ensure we are exactly at the corner
+            % left wavy edge: bottom->top (go up to close), zero at t=0 (seam with BL)
+            -- plot[domain=0:\bottomH, samples=\samps, variable=\t]
+                 ({0 + \amp*sin(360*(\t - 0 - 0.04)/\lam)}, {\t})
+            -- (0,\bottomH) -- cycle;                           % outer bottom
+
+          \gridrect{0}{0}{\rightW}{\bottomH}
+        \end{scope}        
+        
+        % wavy edges
+        \draw[cutline] (0,0) -- (0,\bottomH);     % faces vertical gap
+        \draw[cutline] (0,0) -- (\rightW,0);      % faces horizontal gap
+
+        % true outer borders (right and bottom outer edges)
+        \draw[thick] (\rightW,0) -- (\rightW,\bottomH);
+        \draw[thick] (0,\bottomH) -- (\rightW,\bottomH);
+
+      \end{scope}
+    
+      % ===== "Hello" at (rowH, colH) =====
+      \cell{\rowH}{\colH + 0}{H}
+      \cell{\rowH}{\colH + 1}{E}
+      \cell{\rowH}{\colH + 2}{L}
+      \cell{\rowH}{\colH + 3}{L}
+      \cell{\rowH}{\colH + 4}{O}
+    
+    % ==== Corner labels ====
+      \node[anchor=south east] at (0, 0) {\scriptsize (0,0)};
+      \node[anchor=south west] at (\TotalW, 0) {\scriptsize (0,79)};
+      \node[anchor=north east] at (0, \TotalH) {\scriptsize (59,0)};
+      \node[anchor=north west] at (\TotalW, \TotalH) {\scriptsize (59,79)};
+    
+      % Axis captions
+      \node at (\TotalW/2, -\padT/2 - 0.2) {\scriptsize 80 columns};
+      \node[rotate=90] at (-\padT/2, \TotalH/2) {\scriptsize 60 rows};
+      
+    \end{tikzpicture}
+} % end diagram
+
+The following program places an asterisk in each corner of the screen, then moves the cursor back to the top-left corner:
+
+\begin{lstexample}
+100 cls
+110 print at 0, 0; "*";
+120 print at 0, 79; "*";
+130 print at 59, 0; "*";
+140 print at 59, 79; "*";
+150 print at 0, 0;
+\end{lstexample}
+
+Note that when control returns to SuperBASIC, the system will place its input prompt where the cursor was last positioned. If you delete line 150 and run the program again, because line 140 positions the cursor on the very last character of the screen, the system will have to scroll the output to make room for the prompt, erasing the asterisks at the top.\\
+
+The \kwd{at} modifier doesn't have to appear immediately after \kwd{print}, may be used multiple times in the same statement, and can be freely mixed with other arguments:
+
+\begin{lstexample}
+100 cls 
+110 print "Hello"; at 2,4 "from"; at 4,8 "Canada"
+\end{lstexample}
+
+For the reverse of \kwd{print\ at}, that is, \emph{reading} the character at a specific screen position, see \kwd{screen\$()}.
+
+\end{entry}
+
+\refentry{proc ... endproc}
+\begin{entry}
+Simple procedures. These should be used rather than \kwd{gosub}. The empty parentheses are mandatory even if there aren’t any parameters (the aim is to use value parameters).
+
+\begin{lstexample}
+100 printmessage("hello", 42)
+110 end
+120 proc printmessage(msg$,n)
+130   print msg$ + "world  x " + str$(n)
+140 endproc
+\end{lstexample}
+\end{entry}
+
+\refentry{rem}
+\begin{entry}
+Comment. \code{‘} and \kwd{rem} are synonyms. The rest of the line is ignored.
+
+Short for remark, marks the start of an explanatory comment.
+
+It's considered to
+These may be included anywhere in the source code and extend to the end of the line. Comments are ignored when the program is run.
+
+
+\begin{lstexample}
+10 ' This is a title comment
+20 rem
+30 rem Another comment
+\end{lstexample}
+\end{entry}
+
+\refentry{rnd()}
+\refentrycompact{random()}
+\begin{entry}
+Generates random numbers. this has two forms, which is still many fewer than odo. \kwd{rnd()} behaves like Microsoft basic, negative numbers set the seed,  0 repeats the last value, and positive numbers return an integer 0 <= n < 1. \code{random(n)} returns a number from \code{0} to \code{n-1}.
+
+\begin{lstexample}
+100 print rnd(1),random(6)
+\end{lstexample}
+\end{entry}
+
+\refentry{read / data}
+\begin{entry}
+Reads from \kwd{data} statements. The types must match. For syntactic consistency, string data must be in quote marks.
+
+\begin{lstexample}
+100 read a$,b
+110 data "hello world"
+120 data 59
+\end{lstexample}
+\end{entry}
+
+\refentry{rect}
+\begin{entry}
+Draws a rectangle, using the standard syntax described in the graphics section.
+
+\begin{lstexample}
+100 rect 100,100 colour $ff to 200,200
+\end{lstexample}
+\end{entry}
+
+\refentry{restore}
+\begin{entry}
+Resets the \kwd{data} pointer to the start of the program.
+
+\begin{lstexample}
+100 restore
+\end{lstexample}
+\end{entry}
+
+\refentry{repeat ... until}
+\begin{entry}
 Conditional loop, which is tested at the bottom.
-\example{}
-\begin{verbatim}
-	100 count = 0
-	110 repeat
-	120 count = count + 1:print count
-	130 until count = 10
-\end{verbatim}
 
-\section*{return}
-Return from GOSUB call. You can make up your own death threats.
-\example{}
-\begin{verbatim}
-	100 return
-\end{verbatim}
+\begin{lstexample}
+100 count = 0
+110 repeat
+120 count = count + 1:print count
+130 until count = 10
+\end{lstexample}
+\end{entry}
 
-\section*{right\$()}
-Returns several characters from a string counting from the right
-\example{}
-\begin{verbatim}
-	100 print right$("last four characters",4)
-\end{verbatim}
+\refentry{return}
+\begin{entry}
+Return from \kwd{gosub} call.
 
-\section*{run}
-Runs the current program after clearing variables as for CLEAR. Can also have a parameter which does a LOAD and then RUN
-\example{}
-\begin{verbatim}
-	100 run
-	110 run "demo.bas"
-\end{verbatim}
+\begin{lstexample}
+100 return
+\end{lstexample}
+\end{entry}
 
-\section*{save}
+\refentry{right\$()}
+\begin{entry}
+Returns several characters from a string counting from the right.
+
+\begin{lstexample}
+100 print right$("last four characters",4)
+\end{lstexample}
+\end{entry}
+
+\refentry{run}
+\begin{entry}
+Runs the current program after clearing variables as for \kwd{clear}. Can also have a parameter which does a \kwd{load} and then \kwd{run}.
+
+\begin{lstexample}
+100 run
+110 run "demo.bas"
+\end{lstexample}
+\end{entry}
+
+\refentry{save}
+\begin{entry}
 Saves a BASIC program to the current drive.
-\example{}
-\begin{verbatim}
-	save "game.bas"
-\end{verbatim}
 
-\section*{setdate}
-Sets the RTC to the given date ; the parameters are the day, month and year (00-99). 
-\example{}
-\begin{verbatim}
-	100 setdate 23,1,3
-\end{verbatim}
+\begin{lstexample}
+save "game.bas"
+\end{lstexample}
+\end{entry}
 
-\section*{settime}
-Sets the RTC to the given time ; the parameters are hours, minutes, seconds
-\example{}
-\begin{verbatim}
-	100 settime 9,44,25
-\end{verbatim}
+\refentry{setdate}
+\begin{entry}
+Sets the real-time clock to the given date; the parameters are the day, month and year (00-99).
 
-\section*{sgn()}
-Returns the sign of an number, which is -1 0 or 1 depending on the value.
-\example{}
-\begin{verbatim}
-	100 print sgn(42)
-\end{verbatim}
+\begin{lstexample}
+100 setdate 23,1,3
+\end{lstexample}
+\end{entry}
 
-\section*{sound}
-Generates a sound on one of the channels. There are four channels, corresponding to the. Channel 3 is a noise channel, channels 0-2 are simple square wave channels generating one note each. 
-Sound has two forms
-\example{}
-\begin{verbatim}
-	100 sound 1,500,10
-\end{verbatim}
-generates a sound of pitch 1000 which runs for about 10 timer ticks. The actual frequency is 111,563 / <pitch value>. The pitch value can be from 1 to 1023
-Sounds can be queued up , so you can play 3 notes in a row e.g.
-\example{}
-\begin{verbatim}
-	100 sound 1,1000,20:sound 1,500,10:sound 1,250,20
-\end{verbatim}
-An adjuster value can be added which adds a constant to the pitch every tick, which allows the creation of some simple warpy effects, as in the ZAP command.
-\example{}
-\begin{verbatim}
-	100 sound 1,500,10,10
-\end{verbatim}
+\refentry{settime}
+\begin{entry}
+Sets the real-time clock to the given time; the parameters are hours, minutes, and seconds.
+
+\begin{lstexample}
+100 settime 9,44,25
+\end{lstexample}
+\end{entry}
+
+\refentry{sgn()}
+\begin{entry}
+Returns the sign of a number, which is \code{-1}, \code{0}, or \code{1} depending on the value.
+
+\begin{lstexample}
+100 print sgn(42)
+\end{lstexample}
+\end{entry}
+
+
+\refentry{screen()}
+\refentrycompact{screen\$()}
+\begin{entry}
+Returns the character located at the given screen coordinates. \kwd{screen()} returns the ASCII code of the character, while \kwd{screen\$()} returns the character itself as a string. The coordinates are given as \code{row}, \code{column}, and use the same coordinate system as \kwd{print\ at}:
+
+\begin{lstexample}
+100 print at 15, 10; "#"
+110 print screen$(15, 10) ' prints "#"
+120 print screen(15, 10)  ' prints 35
+\end{lstexample}
+
+See \kwd{print} for a detailed visual explanation of the screen coordinates.\\
+
+Together, \kwd{screen} and \kwd{print\ at} let you treat the screen as a big grid of characters, making them great tools for simple character-based game mechanics such as placing and moving objects on a map and detecting collisions:
+
+% TODO: random target position, game loop
+\begin{lstexample}
+100 cls
+110 print at 15, 30; "@"
+120 input at 0, 0; "Guess a row (0-59): "; row
+130 input at 0, 0; "Guess a column (0-79): "; col
+140 if screen$(row, col) = "@"
+150   print at row, col; "x"
+160   print at 0, 0; "*** You hit the target! ***"
+170 else
+180   print at 0, 0; "=== Oh no, you missed! ==="
+190 endif
+\end{lstexample}
+
+\end{entry}
+
+
+\refentry{sound}
+\begin{entry}
+
+Generates a sound on one of the channels. There are four channels, corresponding to the. Channel 3 is a noise channel, channels 0-2 are simple square wave channels generating one note each.
+Sound has two forms:
+
+\begin{lstexample}
+100 sound 1,500,10
+\end{lstexample}
+
+generates a sound of pitch 1000 which runs for about 10 timer ticks. The actual frequency is 111,563 / <pitch value>. The pitch value can be from 1 to 1023. Sounds can be queued up, so you can play 3 notes in a row, e.g.
+
+
+\begin{lstexample}
+100 sound 1,1000,20:sound 1,500,10:sound 1,250,20
+\end{lstexample}
+
+An adjuster value can be added which adds a constant to the pitch every tick, which allows the creation of some simple warpy effects, as in the \kwd{zap} command.
+
+
+\begin{lstexample}
+100 sound 1,500,10,10
+\end{lstexample}
+
 Creates a tone which drops as it plays (higher pitch values are lower frequency values)
 Channel 3 operates slightly differently. It generates noises which can be modulated by channel 2- see the SN76489 data sheet.
 However, there are currently 8 sounds, which are accessed by the pitch being 16 times the sound number.
-\example{}
-\begin{verbatim}
-	100 sound 3,6*16,10
-\end{verbatim}
+
+
+\begin{lstexample}
+100 sound 3,6*16,10
+\end{lstexample}
+
 Is an explosiony sort of sound. You can just use the constant 96 of course instead.
 Finally this turns off all sound and empties the queues.
-Sound off
 
-\section*{spc()}
+
+\begin{lstexample}
+100 sound off
+\end{lstexample}
+\end{entry}
+
+\refentry{spc()}
+\begin{entry}
 Return a string consisting of a given number of spaces
-\example{}
-\begin{verbatim}
-	100 a$ = spc(32)
-\end{verbatim}
 
-\section*{sprite}
-Manipulate one of the 64 hardware sprites using the standard modifiers. Also supported are sprite image <n> which turns a sprite on and selects image <n> to be used for it, and sprite off, which turns a sprite off. Sprite data is stored at \$30000 onwards. Sprites cannot be scaled and flipped as the hardware does not permit it. Sprites have their own section. For Sprite .. To the sprite is centred on those coordinates.
-\example{}
-\begin{verbatim}
-	100 sprite 4 image 2 to 50,200
-\end{verbatim}
 
-\section*{sprites}
-Enables and Disables all sprites,optionally setting the location of the sprite data in memory which default to \$30000. When turned on, all the sprites are erased and their control values set to zero.
-\example{}
-\begin{verbatim}
-	100 sprites at $18000 on
-\end{verbatim}
+\begin{lstexample}
+100 a$ = spc(32)
+\end{lstexample}
+\end{entry}
 
-\section*{stop}
-Stops program with an error
-\example{}
-\begin{verbatim}
-	100 stop
-\end{verbatim}
+\refentry{sprite}
+\begin{entry}
+Manipulate one of the 64 hardware sprites using the standard modifiers. Also supported are \code{sprite image <n>} which turns a sprite on and selects image <n> to be used for it, and \code{sprite off}, which turns a sprite off. Sprite data is stored at \$30000 onwards. Sprites cannot be scaled and flipped as the hardware does not permit it. Sprites have their own section. For \code{sprite .. to} the sprite is centred on those coordinates.
 
-\section*{text}
-Draws a possibly scaled or flipped string from the standard font on the bitmap, using the standard syntax. Flipping is done using bits 7 and 6 of the mode (e.g. \$80 and \$40) in the colour option, 
-\example{}
-\begin{verbatim}
-	100 text “hello” dim 2 colour 3 to 100,100
-\end{verbatim}
+\begin{lstexample}
+100 sprite 4 image 2 to 50,200
+\end{lstexample}
+\end{entry}
 
-\section*{tile}
-Manipulates the tile map. This allows you to set the scroll offset (with TO xscroll,yscroll) and draw on the time map using AT x,y to set the position and PLOT followed by a list of tiles, with a repeat option using LINE to draw on it. (In the examples, lines 110 and 120 do the same thing)
-\example{}
-\begin{verbatim}
-	100 tile to 12,0
-	110 tile at 4,5 draw 10,11,11,11,10
-	120 tile at 4,5 draw 10,11 line 3,10
-\end{verbatim}
+\refentry{sprites}
+\begin{entry}
+Enables and disables all sprites, optionally setting the location of the sprite data in memory which default to \$30000. When turned on, all the sprites are erased and their control values set to zero.
 
-\section*{tile()}
-Returns the tile at the given tile map position (not screen position)
-\example{}
-\begin{verbatim}
-	100 print tile(2,3)
-\end{verbatim}
+\begin{lstexample}
+100 sprites at $18000 on
+\end{lstexample}
+\end{entry}
 
-\section*{tiles}
-Sets up the tile map. Allows the setting of the size of the tile map with DIM <width>,<height> and the location of the data with AT <map address>,<image address>, all addresses must be at the start of an 8k page.\
-The defaults are 64 x 32 for the tile map and \$24000 for the map - an array of words and \$26000 for the images - an array of 8x8 byte graphics.\
-Currently only 8x8 tiles are supported. 
-\example{}
-\begin{verbatim}
-	100 tiles on
-	110 tiles off
-	120 tiles dim 42,32 at $24000,$26000 on
-\end{verbatim}
+\refentry{stop}
+\begin{entry}
+Stops program with an error.
 
-\section*{timer()}
+\begin{lstexample}
+100 stop
+\end{lstexample}
+\end{entry}
+
+\refentry{text}
+\begin{entry}
+Draws a possibly scaled or flipped string from the standard font on the bitmap, using the standard syntax. Flipping is done using bits 7 and 6 of the mode (e.g. \$80 and \$40) in the colour option,
+
+\begin{lstexample}
+100 text "hello" dim 2 colour 3 to 100,100
+\end{lstexample}
+\end{entry}
+
+\refentry{tile}
+\begin{entry}
+Manipulates the tile map. This allows you to set the scroll offset (with \code{to xscroll,yscroll}) and draw on the time map using \code{at x,y} to set the position and \kwd{plot} followed by a list of tiles, with a repeat option using \kwd{line} to draw on it. 
+
+In the example below, lines 110 and 120 do the same thing.
+
+\begin{lstexample}
+100 tile to 12,0
+110 tile at 4,5 plot 10,11,11,11,10
+120 tile at 4,5 plot 10,11 line 3,10
+\end{lstexample}
+\end{entry}
+
+\refentry{tile()}
+\begin{entry}
+Returns the tile at the given tile map position (not screen position).
+
+\begin{lstexample}
+100 print tile(2,3)
+\end{lstexample}
+\end{entry}
+
+\refentry{tiles}
+\begin{entry}
+Sets up the tile map. Allows the setting of the size of the tile map with \code{dim <width>,<height>} and the location of the data with \code{at <map address>,<image address>}, all addresses must be at the start of an 8k page.\\
+
+The defaults are 64 x 32 for the tile map and \$24000 for the map - an array of words and \$26000 for the images - an array of 8x8 byte graphics. Currently only 8x8 tiles are supported.
+
+\begin{lstexample}
+100 tiles on
+110 tiles off
+120 tiles dim 42,32 at $24000,$26000 on
+\end{lstexample}
+\end{entry}
+
+\refentry{timer()}
+\begin{entry}
 Returns the current value of the 70Hz Frame timer, which will wrap round in a couple of days.
-\example{}
-\begin{verbatim}
-	100 print timer()
-\end{verbatim}
 
-\section*{try}
-Tries to execute a command, usually involving the Kernel, returning an error code if it fails or 0 if successful. Currently supports BLOAD and BSAVE.
-\example{}
-\begin{verbatim}
-	100 try bload "myfile",$10000 to ec
-	110 print ec
-\end{verbatim}
+\begin{lstexample}
+100 print timer()
+\end{lstexample}
+\end{entry}
 
-\section*{val()}
-Converts a number to a string. There must be some number there e.g. “-42xxx” works and returns 42 but “xxx” returns an error.  To make it useable use the function isval() which checks to see if it is valid.
-\example{}
-\begin{verbatim}
-	100 print val(“42”)
-	110 print val(“413.22”)
-\end{verbatim}
+\refentry{try}
+\begin{entry}
+Tries to execute a command, usually involving the Kernel, returning an error code if it fails or 0 if successful. Currently supports \kwd{bload} and \kwd{bsave}.
 
-\section*{str\$()}
-Converts a string to a number, in signed decimal form. 
-\example{}
-\begin{verbatim}
-	100 print str$(42),str$(412.16)
-\end{verbatim}
+\begin{lstexample}
+100 try bload "myfile",$10000 to ec
+110 print ec
+\end{lstexample}
+\end{entry}
 
-\section*{true}
-Returns the constant -1
-\example{}
-\begin{verbatim}
-	100 true
-\end{verbatim}
+\refentry{val()}
+\begin{entry}
+Converts a number to a string. There must be some number there e.g. \code{"-42xxx"} works and returns \code{42} but \code{"xxx"} returns an error.  To make it useable use the function \kwd{isval()} which checks to see if it is valid.
 
-\section*{verify}
+\begin{lstexample}
+100 print val("42")
+110 print val("413.22")
+\end{lstexample}
+\end{entry}
+
+\refentry{str\$()}
+\begin{entry}
+Converts a number to a string, formatting it in signed decimal form.
+
+\begin{lstexample}
+100 print str$(42), str$(412.16)
+\end{lstexample}
+\end{entry}
+
+\refentry{true}
+\begin{entry}
+Returns the constant \code{-1}.
+
+\begin{lstexample}
+100 true
+\end{lstexample}
+\end{entry}
+
+\refentry{verify}
+\begin{entry}
 Compares the current BASIC program to a program stored on the current drive. This command is deprecated at creation as it is a defensive measure against potential bugs in either the kernel, the kernel drivers, or BASIC itself.
-\example{}
-\begin{verbatim}
-	verify "game.bas"
-\end{verbatim}
 
-\section*{while wend}
-Conditional loop with test at the top
-\example{}
-\begin{verbatim}
-	100 islow = 0
-	110 while islow < 10
-	120 print islow
-	130 islow = islow + 1
-	140 wend
-\end{verbatim}
+\begin{lstexample}
+verify "game.bas"
+\end{lstexample}
+\end{entry}
 
-\section*{xload xgo}
-These commands are for cross development in BASIC. If you store an ASCII BASIC program, terminated with a character code >= 128, then these commands will Load or Load and then run that program.
+\refentry{while ... wend}
+\begin{entry}
+Conditional loop with test at the top.
 
-\section*{zap ping shoot and explode}
-Simple commands that generate a simple sound effect
-\example{}
-\begin{verbatim}
-	100 ping:zap:explode
-\end{verbatim}
+\begin{lstexample}
+100 islow = 0
+110 while islow < 10
+120 print islow
+130 islow = islow + 1
+140 wend
+\end{lstexample}
+\end{entry}
 
+\refentry{xload}
+\refentrycompact{xgo}
+\begin{entry}
+These commands are for cross-development in BASIC. If you store an ASCII BASIC program, terminated with a character code >= 128, then these commands will load or load and then run that program.
+\end{entry}
+
+\refentry{zap}
+\refentrycompact{ping}
+\refentrycompact{shoot}
+\refentrycompact{explode}
+\begin{entry}
+Simple commands that generate a simple sound effect.
+
+\begin{lstexample}
+100 ping: zap: explode
+\end{lstexample}
+\end{entry}
